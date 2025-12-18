@@ -341,6 +341,103 @@ class ExceptionCoverageTest {
         }
     }
 
+    @Nested
+    @DisplayName("InvalidCardException Tests")
+    class InvalidCardExceptionTests {
+
+        @Test
+        @DisplayName("Should create with card details")
+        void shouldCreateWithCardDetails() {
+            // Given
+            String lastFour = "1234";
+            String reason = "Card is blocked";
+
+            // When
+            InvalidCardException exception = new InvalidCardException(lastFour, reason);
+
+            // Then
+            assertThat(exception.getCardLastFour()).isEqualTo(lastFour);
+            assertThat(exception.getReason()).isEqualTo(reason);
+            assertThat(exception.getMessage())
+                    .contains(lastFour)
+                    .contains(reason);
+        }
+
+        @Test
+        @DisplayName("Should create with simple message")
+        void shouldCreateWithSimpleMessage() {
+            // When
+            InvalidCardException exception = new InvalidCardException("Card validation failed");
+
+            // Then
+            assertThat(exception.getMessage()).isEqualTo("Card validation failed");
+            assertThat(exception.getCardLastFour()).isNull();
+            assertThat(exception.getReason()).isEqualTo("Card validation failed");
+        }
+    }
+
+    @Nested
+    @DisplayName("CreditCardNotFoundException Tests")
+    class CreditCardNotFoundExceptionTests {
+
+        @Test
+        @DisplayName("Should create with card ID")
+        void shouldCreateWithCardId() {
+            // Given
+            UUID cardId = UUID.randomUUID();
+
+            // When
+            CreditCardNotFoundException exception = new CreditCardNotFoundException(cardId);
+
+            // Then
+            assertThat(exception.getCardId()).isEqualTo(cardId);
+            assertThat(exception.getToken()).isNull();
+            assertThat(exception.getMessage())
+                    .contains(cardId.toString())
+                    .contains("Credit card not found");
+        }
+
+        @Test
+        @DisplayName("Should create with token")
+        void shouldCreateWithToken() {
+            // Given
+            String token = "tok_1234567890abcdefghij";
+
+            // When
+            CreditCardNotFoundException exception = new CreditCardNotFoundException(token);
+
+            // Then
+            assertThat(exception.getToken()).isEqualTo(token);
+            assertThat(exception.getCardId()).isNull();
+            assertThat(exception.getMessage()).contains("token");
+        }
+
+        @Test
+        @DisplayName("Should create with custom message")
+        void shouldCreateWithCustomMessage() {
+            // When
+            CreditCardNotFoundException exception = new CreditCardNotFoundException("Custom not found message", true);
+
+            // Then
+            assertThat(exception.getMessage()).isEqualTo("Custom not found message");
+            assertThat(exception.getCardId()).isNull();
+            assertThat(exception.getToken()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should mask short token in message")
+        void shouldMaskShortTokenInMessage() {
+            // Given
+            String shortToken = "short";
+
+            // When
+            CreditCardNotFoundException exception = new CreditCardNotFoundException(shortToken);
+
+            // Then
+            assertThat(exception.getMessage()).contains("***");
+        }
+    }
+
     @Test
     @DisplayName("All exceptions should extend DomainException")
     void allExceptionsShouldExtendDomainException() {
@@ -354,6 +451,8 @@ class ExceptionCoverageTest {
         CustomerAlreadyExistsException customerExists = new CustomerAlreadyExistsException("test@test.com");
         CartNotFoundException cartNotFound = new CartNotFoundException("test");
         EmptyCartException emptyCart = new EmptyCartException();
+        InvalidCardException invalidCard = new InvalidCardException("Card is invalid");
+        CreditCardNotFoundException cardNotFound = new CreditCardNotFoundException(UUID.randomUUID());
 
         // Then
         assertThat(insufficientStock).isInstanceOf(DomainException.class);
@@ -365,6 +464,8 @@ class ExceptionCoverageTest {
         assertThat(customerExists).isInstanceOf(DomainException.class);
         assertThat(cartNotFound).isInstanceOf(DomainException.class);
         assertThat(emptyCart).isInstanceOf(DomainException.class);
+        assertThat(invalidCard).isInstanceOf(DomainException.class);
+        assertThat(cardNotFound).isInstanceOf(DomainException.class);
     }
 
     @Test
