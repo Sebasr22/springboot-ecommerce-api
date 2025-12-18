@@ -2005,17 +2005,6 @@ Proyecto funcional con todos los requisitos implementados (9/9 completos, 123 te
 ```
 Para cumplir con el criterio de 'Seguridad' y 'Configuración Externa', vamos a extraer las credenciales del docker-compose.yml.
 
-1. Crea un archivo .env en la raíz con:
-DB_PASSWORD=password
-DB_USER=postgres
-DB_NAME=farmatodo_db
-DB_PORT=5432
-ENCRYPTION_KEY=esta_es_una_super_clave_secreta_de_32_caracteres_minimo
-API_KEY=production_api_key_123
-SPRING_MAIL_HOST=mailhog
-SPRING_MAIL_PORT=1025
-APP_PORT=8080
-
 2. Crea .env.example (el template público para desarrolladores) con valores de ejemplo (placeholders).
 
 3. Actualiza .gitignore para agregar .env, .env.local y .env.*.local.
@@ -2296,10 +2285,95 @@ Tarea Adicional:
 | README.md | 583 | Documentación principal |
 | PROMPTS.md | 2136+ | Historial de 21 prompts |
 | CLAUDE.md | 350+ | Guía de arquitectura |
-| PROJECT_STATUS.md | 200+ | Estado del proyecto |
-| TECHNICAL_DEBT_CLEANUP.md | 100+ | Limpieza técnica |
 | Instrucciones.md | - | Requisitos originales |
 
 **Total**: ~3400 líneas de documentación
 
 ---
+
+## Prompt #22: Auditoría de Cobertura de Pruebas y Estrategia de Testing
+**Fecha**: 2025-12-17
+**Fase**: Testing / Quality Assurance
+
+### Contexto
+El proyecto ha completado la fase de desarrollo principal pero la cobertura de pruebas es baja y potencialmente débil. Se requiere una auditoría completa de las pruebas existentes y la implementación de una estrategia robusta de testing.
+
+### Prompt Completo
+```
+Act as a Senior QA Automation Engineer and Java Developer specializing in Spring Boot 3 and Hexagonal Architecture.
+
+We have finished the main development phase, but our test coverage is low and potentially weak. I need you to audit the current tests and implement a robust testing strategy that ensures the system is reliable, covering not just "happy paths" but also edge cases and errors.
+
+Please follow this execution plan strictly:
+
+1. CONTEXT & DISCOVERY (Do this first):
+   - Read "docs/instrucciones.md" to understand the business rules and constraints.
+   - Read "docs/PROJECT_STATUS.md" to see what features are implemented.
+   - Scan "src/main/java" to identify all existing Controllers (Endpoints) and Services.
+   - Scan "src/test/java" to see what tests currently exist.
+
+2. GAP ANALYSIS (The Audit):
+   - Create a mental matrix of [Endpoint] vs [Test Coverage].
+   - Identify which endpoints are completely missing tests.
+   - Identify which endpoints only test the "Happy Path" (200 OK) and are missing "Sad Paths" (400 Bad Request, 404 Not Found, 500 Internal Error, Validation Errors).
+   - Check if the Domain Logic (validations, calculations) is being unit tested.
+
+3. TEST PLAN REPORT:
+   - Create a file named "PLAN_DE_PRUEBAS.md" in SPANISH.
+   - List the critical missing tests.
+   - Propose a strategy: 
+     * Unit Tests for Domain/Application.
+     * Integration Tests (@WebMvcTest or @SpringBootTest) for Controllers/Infrastructure.
+
+4. EXECUTION - PHASE 1 (Integration Tests):
+   - After creating the plan, I want you to start coding immediately.
+   - Focus first on the **Controllers (Infrastructure Adapters)**.
+   - Create or update the test files for the Controllers.
+   - **CRITICAL:** For each endpoint, ensure you write tests for:
+     * Success (200 OK) with valid data.
+     * Validation Error (400 Bad Request) - e.g., missing fields, invalid email format, negative numbers.
+     * Business Error (e.g., "User not found", "Drug already exists").
+   - Use `MockMvc` to simulate the HTTP requests.
+
+5. VERIFICATION:
+   - After writing the code, run `./mvnw test` to ensure the new tests pass.
+   - If they fail, fix them immediately.
+
+GOAL: I want to be confident that if all tests pass, the API is working perfectly according to the requirements.
+```
+
+### Resultado Generado
+
+**Análisis de Descubrimiento**:
+- Leído instrucciones.md con requisitos funcionales y no funcionales
+- Leído PROJECT_STATUS.md con estado actual del proyecto
+- Identificados 7 Controllers y 8 Services
+
+**Gap Analysis (Auditoría)**:
+
+| Controlador | Tests Existentes | Estado |
+|-------------|------------------|--------|
+| CustomerController | 6 tests | ✅ Completo |
+| OrderController | 7 tests | ✅ Completo |
+| PaymentController | 8 tests | ✅ Completo |
+| ProductController | 12 tests | ✅ Completo |
+| **PingController** | 0 tests | ❌ FALTANTE |
+| **CardController** | 0 tests | ❌ FALTANTE |
+| **CartController** | 0 tests | ❌ FALTANTE |
+
+**Brechas Críticas Identificadas**:
+1. PingController - Sin tests (riesgo bajo)
+2. CardController - Sin tests (riesgo ALTO - datos PCI)
+3. CartController - Sin tests (riesgo ALTO - flujo de compra)
+4. CartService - Sin tests (riesgo alto - lógica de carrito)
+
+**Tests Implementados**:
+- PingControllerTest (1 test)
+- CardControllerTest (7 tests)
+- CartControllerTest (11 tests)
+- CartServiceTest (10 tests)
+
+**Resultado Final**:
+- Tests agregados: 29 nuevos tests
+- Cobertura de controladores: 100% (7/7)
+- Todos los tests pasan exitosamente
