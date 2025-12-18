@@ -32,11 +32,11 @@ public class OpenApiConfig {
                 .info(apiInfo())
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080")
-                                .description("Local Development Server"),
+                                .url("https://ft-api.srodriguez-tech.com")
+                                .description("Production Server (Live Demo)"),
                         new Server()
-                                .url("https://api.farmatodo.com")
-                                .description("Production Server")
+                                .url("http://localhost:8080")
+                                .description("Local Development Server")
                 ))
                 .components(new Components()
                         .addSecuritySchemes(SECURITY_SCHEME_NAME, securityScheme())
@@ -49,29 +49,28 @@ public class OpenApiConfig {
      */
     private Info apiInfo() {
         return new Info()
-                .title("Farmatodo Backend API")
+                .title("Farmatodo Challenge API")
                 .description("""
-                        Backend REST API for Farmatodo e-commerce system.
+                        Backend REST API developed for the Farmatodo Senior Backend Developer Challenge.
+                        
+                        This API implements a complete e-commerce flow using Hexagonal Architecture, 
+                        SOLID principles, and robust error handling.
 
-                        ## Features
-                        - Customer management
-                        - Product search and inventory
-                        - Order creation and processing
-                        - Credit card tokenization
-                        - Payment processing with retry logic
+                        ## Key Features
+                        - **Customer Management**: Registration and validation.
+                        - **Inventory**: Product search with pagination.
+                        - **Shopping Cart**: Add, remove, and checkout items.
+                        - **Secure Payments**: Credit card tokenization simulation.
+                        - **Resilience**: Retry logic and transaction management.
 
                         ## Authentication
-                        All endpoints under `/api/*` require an API Key in the `X-API-KEY` header.
-
-                        Click the **Authorize** button above to configure your API key.
-
-                        **Default API Key for testing**: `default-dev-key-change-in-production`
+                        This API is secured. You need an `X-API-KEY` to access the endpoints.
+                        Please use the **Authorize** button at the top right to enter your credentials.
                         """)
                 .version("1.0.0")
                 .contact(new Contact()
-                        .name("Farmatodo Development Team")
-                        .email("dev@farmatodo.com")
-                        .url("https://farmatodo.com")
+                        .name("Sebastian Rodriguez") // Tu nombre
+                        .url("https://www.linkedin.com/in/sebastian-rodriguez-9340a2191/")
                 )
                 .license(new License()
                         .name("MIT License")
@@ -81,13 +80,12 @@ public class OpenApiConfig {
 
     /**
      * Security scheme definition for API Key authentication.
-     * Configures the "Authorize" button in Swagger UI.
      */
     private SecurityScheme securityScheme() {
         return new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
                 .in(SecurityScheme.In.HEADER)
                 .name("X-API-KEY")
-                .description("API Key for authentication. Use: `default-dev-key-change-in-production` for testing.");
+                .description("Enter the API Key provided for the challenge review.");
     }
 }

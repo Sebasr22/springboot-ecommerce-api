@@ -29,7 +29,7 @@ public class CartItemEntity {
     @JoinColumn(name = "cart_id", nullable = false)
     private CartEntity cart;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
 
