@@ -1,0 +1,46 @@
+# Build artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper (we'll download in container)
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# Test reports
+*.stackdump
+
+# Documentation (not needed in image)
+*.md
+PROMPTS.md
+PROJECT_STATUS.md
+Instrucciones.md
+
+# Docker files (no need to copy these into the image)
+Dockerfile
+docker-compose.yml
+.dockerignore
