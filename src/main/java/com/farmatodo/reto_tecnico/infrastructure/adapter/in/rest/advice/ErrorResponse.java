@@ -34,6 +34,9 @@ public class ErrorResponse {
     @Schema(description = "Human-readable error message", example = "Validation failed for one or more fields")
     private String message;
 
+    @Schema(description = "Request path that caused the error", example = "/api/v1/orders")
+    private String path;
+
     @Schema(description = "Field-level validation errors (only present for validation failures)",
             example = "{\"email\": \"Email must be valid\", \"phone\": \"Phone must contain only digits\"}")
     private Map<String, String> validationErrors;

@@ -242,7 +242,7 @@ class CartControllerTest {
                         .content(requestBody))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("RESOURCE_NOT_FOUND"));
+                .andExpect(jsonPath("$.error").value("PRODUCT_NOT_FOUND"));
 
         verify(addToCartUseCase, times(1)).addToCart(customerId, nonExistentProductId, 2);
     }
@@ -373,7 +373,7 @@ class CartControllerTest {
                         .header(API_KEY_HEADER, API_KEY_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("RESOURCE_NOT_FOUND"));
+                .andExpect(jsonPath("$.error").value("CART_NOT_FOUND"));
 
         verify(checkoutCartUseCase, times(1)).checkout(nonExistentCustomerId);
     }

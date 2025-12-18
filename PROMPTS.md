@@ -2807,3 +2807,106 @@ Sincronización exitosa del código Java con el esquema de base de datos:
 - `PaymentControllerTest.java` - Todas las requests `creditCard` incluyen `customerId`
 
 **Resultado:** Build y tests exitosos (434 tests, 0 failures)
+
+---
+
+## Prompt #11: Error Handling Audit & Refactor
+**Fecha**: 2025-12-18
+**Fase**: Desarrollo/Hardening
+
+### Contexto
+La aplicación está retornando errores 500 Internal Server Error para problemas comunes como campos faltantes o violaciones de constraints de base de datos. Se necesita un manejo de errores robusto y profesional que mapee excepciones específicas a códigos HTTP apropiados.
+
+### Prompt Completo
+```
+Act as a Senior Backend Architect and Spring Boot Expert.
+
+We need to "bulletproof" the Farmatodo Backend Challenge.
+Currently, the application returns `500 Internal Server Error` for common issues (like missing fields or DB constraint violations), which is bad practice.
+
+CONTEXT:
+1. We are using Hexagonal Architecture.
+2. We have a `GlobalExceptionHandler` and a standardized `ErrorResponse` DTO (recently created).
+3. The Database has strict constraints (Foreign Keys, Not Null) that are causing runtime exceptions.
+
+YOUR MISSION:
+Perform a comprehensive "Error Handling Audit & Refactor" across the entire API.
+
+### TASK 1: UPGRADE GLOBAL EXCEPTION HANDLER
+Modify `GlobalExceptionHandler.java` to catch specific exceptions and map them to the correct HTTP Status Codes. You must handle:
+
+- **Input Validation:** `MethodArgumentNotValidException` -> 400 Bad Request (Show field-level errors).
+- **Database Integrity:** `DataIntegrityViolationException` -> 409 Conflict (e.g., "Duplicate entry" or "Missing mandatory relationship").
+- **Business Logic:** `InsufficientStockException`, `InvalidCardException` -> 400 Bad Request or 422 Unprocessable Entity.
+- **Resource Not Found:** `EntityNotFoundException` (or custom `ResourceNotFoundException`) -> 404 Not Found.
+- **Authentication:** `BadCredentialsException`, `AccessDeniedException` -> 401/403.
+- **Catch-All:** `Exception.class` -> 500 Internal Server Error (Generic message for security).
+
+### TASK 2: AUDIT DOMAIN EXCEPTIONS
+Scan the `domain` package.
+- Ensure we have custom runtime exceptions for business rules (e.g., `ProductNotFoundException`, `OrderProcessingException`).
+- If they are missing, create them cleanly in `domain/exception`.
+
+### TASK 3: REFACTOR CONTROLLERS & SERVICES
+Scan all Controllers (`infrastructure/.../rest/controller`).
+- **Remove try-catch blocks** from Controllers. Let exceptions bubble up to the GlobalExceptionHandler.
+- Ensure Controllers rely on `@Valid` for DTO validation.
+- Ensure Services throw specific exceptions instead of returning null or generic errors.
+
+### DELIVERABLE:
+- Provide the full code for the upgraded `GlobalExceptionHandler.java`.
+- Provide the code for any new Exception classes needed.
+- Show me the specific lines to change in Controllers/Services if refactoring is needed.
+
+GOAL: The API should NEVER return a 500 error for a client-side mistake (like sending a bad JSON or a non-existent ID).
+```
+
+### Resultado Generado
+
+**Auditoría Completa Realizada**:
+
+1. **GlobalExceptionHandler** - Previamente manejaba 10 tipos de excepciones, ahora maneja **16+**
+2. **Domain Exceptions** - Ya existían 10, se agregaron 2 nuevas
+3. **Controllers** - ✅ Ya estaban limpios (sin try-catch, usando @Valid)
+4. **Services** - ✅ Ya lanzaban excepciones específicas correctamente
+
+**Archivos Creados**:
+- `domain/exception/InvalidCardException.java` - Para validaciones de tarjeta fallidas
+- `domain/exception/CreditCardNotFoundException.java` - Para búsqueda de tarjetas
+
+**Archivos Modificados**:
+- `infrastructure/adapter/in/rest/advice/GlobalExceptionHandler.java` - Refactorización completa
+- `infrastructure/adapter/in/rest/advice/ErrorResponse.java` - Agregado campo `path`
+
+**Nuevos Exception Handlers Agregados**:
+
+| Excepción | Código HTTP | Error Code |
+|-----------|-------------|------------|
+| `ConstraintViolationException` | 400 | CONSTRAINT_VIOLATION |
+| `HttpMessageNotReadableException` | 400 | MALFORMED_JSON |
+| `MissingServletRequestParameterException` | 400 | MISSING_PARAMETER |
+| `MethodArgumentTypeMismatchException` | 400 | TYPE_MISMATCH |
+| `DataIntegrityViolationException` | 409 | DATA_INTEGRITY_VIOLATION |
+| `InvalidCardException` | 409 | INVALID_CARD |
+| `CreditCardNotFoundException` | 404 | CREDIT_CARD_NOT_FOUND |
+| `NoResourceFoundException` | 404 | ENDPOINT_NOT_FOUND |
+| `HttpRequestMethodNotSupportedException` | 405 | METHOD_NOT_ALLOWED |
+| `DomainException` (fallback) | 400 | DOMAIN_ERROR |
+
+**Mejoras Adicionales**:
+- Error codes ahora son específicos por tipo de recurso (PRODUCT_NOT_FOUND, ORDER_NOT_FOUND, etc.)
+- Campo `path` agregado a todas las respuestas de error para debugging
+- Mensajes de DB constraints traducidos a mensajes user-friendly
+- Catch-all genérico protege contra exposición de detalles internos
+
+**Tests Actualizados**:
+- `CartControllerTest.java` - 2 assertions actualizadas para error codes específicos
+- `OrderControllerTest.java` - 2 assertions actualizadas para error codes específicos
+- `PaymentControllerTest.java` - 1 assertion actualizada para error codes específicos
+
+**Resultado Final**:
+- ✅ 434 tests pasando (0 fallos)
+- ✅ BUILD SUCCESS
+- ✅ API nunca retornará 500 por errores de cliente
+
+---

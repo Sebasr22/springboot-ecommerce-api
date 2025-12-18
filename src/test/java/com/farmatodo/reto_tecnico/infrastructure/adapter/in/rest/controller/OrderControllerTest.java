@@ -217,7 +217,7 @@ class OrderControllerTest {
                         .header(API_KEY_HEADER, API_KEY_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("RESOURCE_NOT_FOUND"))
+                .andExpect(jsonPath("$.error").value("ORDER_NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value(containsString(orderId.toString())));
 
         verify(orderRepository, times(1)).findById(orderId);
@@ -253,7 +253,7 @@ class OrderControllerTest {
                         .content(requestBody))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("RESOURCE_NOT_FOUND"));
+                .andExpect(jsonPath("$.error").value("PRODUCT_NOT_FOUND"));
 
         verify(searchProductUseCase, times(1)).findById(nonExistentProductId);
         verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList());

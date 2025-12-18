@@ -194,7 +194,7 @@ class PaymentControllerTest {
                         .content(requestBody))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("RESOURCE_NOT_FOUND"));
+                .andExpect(jsonPath("$.error").value("ORDER_NOT_FOUND"));
 
         verify(orderRepository, times(1)).findById(nonExistentOrderId);
         verify(processPaymentUseCase, never()).processPayment(any(), any());
