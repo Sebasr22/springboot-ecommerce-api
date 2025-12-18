@@ -4,9 +4,11 @@ import com.farmatodo.reto_tecnico.application.config.FarmatodoProperties;
 import com.farmatodo.reto_tecnico.domain.exception.TokenizationFailedException;
 import com.farmatodo.reto_tecnico.domain.model.CreditCard;
 import com.farmatodo.reto_tecnico.domain.port.in.TokenizeCardUseCase;
+import com.farmatodo.reto_tecnico.domain.port.out.CreditCardRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Random;
 import java.util.UUID;
@@ -22,11 +24,15 @@ import java.util.UUID;
 public class TokenizationServiceImpl implements TokenizeCardUseCase {
 
     private final FarmatodoProperties properties;
+    private final CreditCardRepositoryPort creditCardRepository;
     private final Random random = new Random();
 
     @Override
+    @Transactional
     public CreditCard tokenize(CreditCard creditCard) {
-        log.info("Tokenizing credit card ending in {}", creditCard.getCardNumber().getLastFourDigits());
+        log.info("Tokenizing credit card ending in {} for customer {}",
+                creditCard.getCardNumber().getLastFourDigits(),
+                creditCard.getCustomerId());
 
         // Validate card before tokenization
         validateCard(creditCard);
@@ -47,11 +53,14 @@ public class TokenizationServiceImpl implements TokenizeCardUseCase {
         // Clear sensitive data after successful tokenization
         creditCard.clearSensitiveData();
 
-        log.info("Successfully tokenized card ending in {}. Token: {}",
-                creditCard.getCardNumber().getLastFourDigits(),
+        // Persist the tokenized card to database
+        CreditCard savedCard = creditCardRepository.save(creditCard);
+
+        log.info("Successfully tokenized and saved card ending in {}. Token: {}",
+                savedCard.getCardNumber().getLastFourDigits(),
                 maskToken(token));
 
-        return creditCard;
+        return savedCard;
     }
 
     @Override
@@ -60,9 +69,13 @@ public class TokenizationServiceImpl implements TokenizeCardUseCase {
             return false;
         }
 
-        // In production, this would verify the token with the tokenization service
-        // For simulation, we just check format
-        return token.startsWith("tok_") && token.length() > 20;
+        // Check format first
+        if (!token.startsWith("tok_") || token.length() <= 20) {
+            return false;
+        }
+
+        // Verify token exists in database
+        return creditCardRepository.existsByToken(token);
     }
 
     /**

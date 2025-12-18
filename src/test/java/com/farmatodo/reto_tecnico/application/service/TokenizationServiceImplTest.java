@@ -4,6 +4,7 @@ import com.farmatodo.reto_tecnico.application.config.FarmatodoProperties;
 import com.farmatodo.reto_tecnico.domain.exception.TokenizationFailedException;
 import com.farmatodo.reto_tecnico.domain.model.CreditCard;
 import com.farmatodo.reto_tecnico.domain.model.valueobjects.CardNumber;
+import com.farmatodo.reto_tecnico.domain.port.out.CreditCardRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,23 +34,35 @@ class TokenizationServiceImplTest {
     @Mock
     private FarmatodoProperties.Tokenization tokenizationConfig;
 
+    @Mock
+    private CreditCardRepositoryPort creditCardRepository;
+
     @InjectMocks
     private TokenizationServiceImpl tokenizationService;
 
     private CreditCard validCard;
+    private UUID customerId;
 
     @BeforeEach
     void setUp() {
         // Configure properties mock
         lenient().when(properties.getTokenization()).thenReturn(tokenizationConfig);
 
+        // Generate a customer ID for tests
+        customerId = UUID.randomUUID();
+
         // Create valid credit card (Visa, not expired, valid Luhn)
         validCard = CreditCard.builder()
+                .customerId(customerId)
                 .cardNumber(new CardNumber("4532015112830366")) // Valid Visa with Luhn
                 .cardholderName("John Doe")
                 .expirationDate("12/25")
                 .cvv("123")
                 .build();
+
+        // Configure repository mock to return the saved card
+        lenient().when(creditCardRepository.save(any(CreditCard.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -86,6 +101,7 @@ class TokenizationServiceImplTest {
     void shouldThrowExceptionForExpiredCard() {
         // Given: Expired card
         CreditCard expiredCard = CreditCard.builder()
+                .customerId(customerId)
                 .cardNumber(new CardNumber("4532015112830366"))
                 .cardholderName("John Doe")
                 .expirationDate("12/20") // Expired (year 2020)
@@ -105,6 +121,7 @@ class TokenizationServiceImplTest {
     void shouldThrowExceptionForInvalidLuhnCheck() {
         // Given: Card with invalid Luhn check
         CreditCard invalidCard = CreditCard.builder()
+                .customerId(customerId)
                 .cardNumber(new CardNumber("4532015112830367")) // Invalid Luhn (last digit wrong)
                 .cardholderName("John Doe")
                 .expirationDate("12/25")
@@ -123,11 +140,15 @@ class TokenizationServiceImplTest {
     @Test
     @DisplayName("Should validate token correctly")
     void shouldValidateTokenCorrectly() {
-        // Valid tokens
+        // Configure repository mock for valid token lookup
+        when(creditCardRepository.existsByToken("tok_12345678901234567890")).thenReturn(true);
+        when(creditCardRepository.existsByToken("tok_abcdefghijklmnopqrstuvwxyz")).thenReturn(true);
+
+        // Valid tokens (format correct + exists in database)
         assertThat(tokenizationService.validateToken("tok_12345678901234567890")).isTrue();
         assertThat(tokenizationService.validateToken("tok_abcdefghijklmnopqrstuvwxyz")).isTrue();
 
-        // Invalid tokens
+        // Invalid tokens (don't check database due to format validation)
         assertThat(tokenizationService.validateToken(null)).isFalse();
         assertThat(tokenizationService.validateToken("")).isFalse();
         assertThat(tokenizationService.validateToken("   ")).isFalse();
@@ -178,6 +199,7 @@ class TokenizationServiceImplTest {
 
         // Mastercard (valid Luhn)
         CreditCard mastercard = CreditCard.builder()
+                .customerId(customerId)
                 .cardNumber(new CardNumber("5425233430109903"))
                 .cardholderName("Jane Doe")
                 .expirationDate("12/25")
@@ -186,6 +208,7 @@ class TokenizationServiceImplTest {
 
         // Amex (valid Luhn)
         CreditCard amex = CreditCard.builder()
+                .customerId(customerId)
                 .cardNumber(new CardNumber("374245455400126"))
                 .cardholderName("Bob Smith")
                 .expirationDate("12/25")
@@ -231,6 +254,7 @@ class TokenizationServiceImplTest {
 
         for (int i = 0; i < iterations; i++) {
             CreditCard testCard = CreditCard.builder()
+                    .customerId(customerId)
                     .cardNumber(new CardNumber("4532015112830366"))
                     .cardholderName("Test User")
                     .expirationDate("12/25")

@@ -31,6 +31,13 @@ public class CreditCard {
     private UUID id;
 
     /**
+     * ID of the customer who owns this credit card.
+     * Required for referential integrity with customers table.
+     */
+    @NotNull(message = "Customer ID cannot be null")
+    private UUID customerId;
+
+    /**
      * Card number (Value Object with masking).
      */
     @NotNull(message = "Card number cannot be null")
@@ -65,15 +72,17 @@ public class CreditCard {
 
     /**
      * Creates a new credit card instance for tokenization.
+     * @param customerId ID of the customer who owns this card
      * @param cardNumber card number
      * @param cvv CVV code
      * @param expirationDate expiration date in MM/YY format
      * @param cardholderName cardholder name
      * @return new CreditCard instance
      */
-    public static CreditCard create(CardNumber cardNumber, String cvv, String expirationDate, String cardholderName) {
+    public static CreditCard create(UUID customerId, CardNumber cardNumber, String cvv, String expirationDate, String cardholderName) {
         return CreditCard.builder()
                 .id(UUID.randomUUID())
+                .customerId(customerId)
                 .cardNumber(cardNumber)
                 .cvv(cvv)
                 .expirationDate(expirationDate)

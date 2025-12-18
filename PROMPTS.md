@@ -2678,3 +2678,132 @@ Para verificar los cambios:
 - ✅ Clientes existentes que envíen todos los campos seguirán funcionando
 - ✅ Nuevos clientes verán el ejemplo simplificado
 - ✅ Guest checkout (campos customer completos) sigue disponible pero oculto por defecto
+
+## Prompt #26: Auditoría de Integridad Referencial y Scripts de Base de Datos
+**Fecha**: 2025-12-18
+**Fase**: Database / Infrastructure
+
+### Contexto
+Al revisar el diagrama ER en DBeaver, se detectó que las tablas `carts`, `orders`, y `search_logs` tienen columnas `customer_id` pero **NO tienen Foreign Keys** hacia la tabla `customers`. Esto representa una brecha de integridad referencial.
+
+### Prompt Completo
+```
+Act as a Senior Database Administrator (DBA) and Backend Architect.
+
+We have deployed the database and connected via DBeaver. Looking at the ER Diagram, we noticed a significant issue regarding Referential Integrity.
+
+CONTEXT:
+1. The tables carts, orders, and search_logs have a customer_id column.
+2. However, there are NO foreign keys linking them to the customers table.
+3. The project uses Spring Data JPA. We need to understand WHY Hibernate didn't generate these constraints or if we should add them manually.
+
+TASKS:
+1. ENTITY AUDIT - Scan entity files for @ManyToOne relationships
+2. SQL FIX SCRIPT - Generate ALTER TABLE statements for missing FKs
+3. DATA SEEDING - Generate product INSERT statements
+4. EXECUTION PLAN - Where to run the scripts
+```
+
+### Resultado Generado
+
+**Auditoría de Entidades JPA**:
+
+| Entidad | Campo | Tipo de Relación | FK Generada por Hibernate |
+|---------|-------|------------------|---------------------------|
+| CartEntity | customerId | `UUID` (raw field) | ❌ NO |
+| OrderEntity | customerId | `UUID` (raw field) | ❌ NO |
+| SearchLogEntity | customerId | `UUID` (raw field) | ❌ NO |
+| OrderItemEntity | productId | `UUID` (raw field) | ❌ NO |
+| CartItemEntity | product | `@ManyToOne(ProductEntity)` | ✅ SÍ |
+
+**Razón del Problema**:
+Hibernate SOLO genera Foreign Keys cuando se usa `@ManyToOne` o `@OneToOne` con `@JoinColumn`. Los campos `UUID` simples se tratan como columnas independientes sin relación.
+
+**Archivos Creados**:
+- `V2__add_foreign_keys.sql` - Script DDL para agregar las 4 FKs faltantes
+
+**Foreign Keys Agregadas**:
+1. `fk_carts_customer_id`: carts → customers (ON DELETE CASCADE)
+2. `fk_orders_customer_id`: orders → customers (ON DELETE RESTRICT)
+3. `fk_search_logs_customer_id`: search_logs → customers (ON DELETE SET NULL)
+4. `fk_order_items_product_id`: order_items → products (ON DELETE RESTRICT)
+
+**Data Seeding**:
+- ✅ `data.sql` ya existía con 10 productos realistas de farmacia
+- ✅ 1 cliente de prueba incluido (juan@test.com)
+
+**Plan de Ejecución**:
+1. Ejecutar `V2__add_foreign_keys.sql` en DBeaver (una sola vez)
+2. Verificar en ER Diagram que aparezcan las relaciones
+3. Reiniciar la aplicación para confirmar que no hay conflictos
+
+**Recomendaciones a Futuro**:
+- Considerar migrar a `@ManyToOne` en las entidades para consistencia
+- Evaluar usar Flyway/Liquibase para versionado de migraciones
+
+## Prompt #27: Sincronización Java-Database para CreditCard.customerId
+**Fecha**: 2025-12-18
+**Fase**: Infrastructure / Database Sync
+
+### Contexto
+Tras ejecutar manualmente los scripts de integridad referencial (V2__add_foreign_keys.sql), la tabla `credit_cards` ahora tiene una columna `customer_id` (UUID NOT NULL) con FK hacia `customers.id`. Sin embargo, el código Java quedó desincronizado y falla en runtime por violación de integridad referencial.
+
+### Prompt Completo
+```
+Act as a Senior Java Backend Lead and Hexagonal Architecture Expert.
+
+We are continuing the development of the "Farmatodo Backend Challenge". I am starting a new session, so you need to load the full context AND be aware of recent manual changes that are not yet documented in the status files.
+
+### 1. CONTEXT LOADING (Read these first):
+- Read "docs/instrucciones.md" to understand the core business rules.
+- Read "docs/PROJECT_STATUS.md" to understand the architecture and progress so far.
+- Scan `pom.xml` to check dependencies.
+
+### 2. CRITICAL STATE UPDATE (What has changed recently):
+The `PROJECT_STATUS.md` is slightly outdated. Be aware of the following "Shadow Updates" that are already live in the project:
+
+**A. Database Schema (PostgreSQL):**
+- We have manually executed SQL scripts (`V2__add_foreign_keys.sql`) to enforce Referential Integrity.
+- **Critical:** The `credit_cards` table now has a `customer_id` column (UUID NOT NULL) and a Foreign Key to `customers`.
+- Other tables (`carts`, `orders`, `search_logs`) also have proper FKs now.
+
+**B. Documentation (Swagger/OpenAPI):**
+- We have polished `OpenApiConfig` and Controller annotations.
+- Error responses (400, 500) now return a standardized `ErrorResponse` schema.
+- DTO examples in Swagger have been cleaned up (e.g., hiding redundant customer fields in `OrderRequest`).
+
+### 3. THE CURRENT PROBLEM (Code-Database Mismatch):
+Since we updated the Database Schema manually (adding `customer_id` to `credit_cards`), the Java code is now out of sync and broken at runtime.
+- The `CreditCardEntity` is missing the `customerId` field.
+- The `TokenizeCardRequest` DTO does not accept a `customerId`.
+- The Mappers are ignoring this relationship.
+- If we try to tokenize a card now, it will fail with a Database Integrity Violation.
+
+### 4. IMMEDIATE GOAL:
+We need to synchronize the Java Code with the Database Schema.
+- Update Domain, DTOs, Entities, and Mappers to support `customerId` in the Credit Card flow.
+- Ensure the endpoint `POST /cards/tokenize` receives and saves the customer ID.
+```
+
+### Resultado Generado
+Sincronización exitosa del código Java con el esquema de base de datos:
+
+**Archivos Modificados:**
+1. `CreditCard.java` (domain model) - Añadido campo `customerId` (UUID) y actualizado método `create()`
+2. `CreditCardEntity.java` - Añadido campo `customerId` con `@Column(name = "customer_id")`
+3. `TokenizeCardRequest.java` (DTO) - Añadido campo `customerId` con validación `@NotNull`
+4. `TokenResponse.java` - Añadido campo `customerId` en la respuesta
+5. `CreditCardRestMapper.java` - Actualizado para mapear `customerId`
+6. `TokenizationServiceImpl.java` - Añadida inyección de `CreditCardRepositoryPort` y persistencia
+
+**Archivos Creados:**
+1. `CreditCardRepositoryPort.java` - Nuevo output port para persistencia de tarjetas
+2. `CreditCardRepositoryAdapter.java` - Implementación del adapter con JPA
+
+**Tests Actualizados:**
+- `CreditCardTest.java` - Actualizado para incluir `customerId`
+- `TokenizationServiceImplTest.java` - Añadido mock de `CreditCardRepositoryPort`
+- `CardControllerTest.java` - Todas las requests incluyen `customerId`
+- `PaymentControllerTest.java` - Todas las requests `creditCard` incluyen `customerId`
+
+**Resultado:** Build y tests exitosos (434 tests, 0 failures)

@@ -32,6 +32,13 @@ public class CreditCardEntity {
     private UUID id;
 
     /**
+     * Customer ID who owns this credit card.
+     * Foreign Key to customers table (enforced by database constraint).
+     */
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
+
+    /**
      * Masked card number (e.g., "************1234").
      * Only last 4 digits shown for security.
      * Full card number is NEVER persisted.

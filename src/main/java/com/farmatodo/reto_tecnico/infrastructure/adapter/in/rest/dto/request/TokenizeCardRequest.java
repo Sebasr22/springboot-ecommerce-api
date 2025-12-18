@@ -2,11 +2,14 @@ package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 /**
  * Request DTO for tokenizing a credit card.
@@ -20,6 +23,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Schema(description = "Credit card tokenization request - sensitive data not persisted")
 public class TokenizeCardRequest {
+
+    @NotNull(message = "Customer ID cannot be null")
+    @Schema(
+        description = "ID of the customer who owns this card",
+        example = "123e4567-e89b-12d3-a456-426614174000",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    private UUID customerId;
 
     @NotBlank(message = "Card number cannot be blank")
     @Pattern(regexp = "^[0-9]{13,19}$", message = "Card number must be between 13 and 19 digits")

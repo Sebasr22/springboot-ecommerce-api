@@ -62,14 +62,16 @@ class CreditCardTest {
     @DisplayName("Should create credit card using factory method")
     void shouldCreateCreditCardUsingFactoryMethod() {
         // Given
+        UUID customerId = UUID.randomUUID();
         CardNumber cardNumber = new CardNumber(VALID_CARD_NUMBER);
         String expirationDate = getValidExpirationDate();
 
         // When
-        CreditCard card = CreditCard.create(cardNumber, VALID_CVV, expirationDate, VALID_CARDHOLDER);
+        CreditCard card = CreditCard.create(customerId, cardNumber, VALID_CVV, expirationDate, VALID_CARDHOLDER);
 
         // Then
         assertThat(card.getId()).isNotNull();
+        assertThat(card.getCustomerId()).isEqualTo(customerId);
         assertThat(card.getCardNumber()).isEqualTo(cardNumber);
         assertThat(card.getCvv()).isEqualTo(VALID_CVV);
         assertThat(card.isTokenized()).isFalse();
@@ -242,13 +244,15 @@ class CreditCardTest {
     void shouldCreateCreditCardUsingAllArgsConstructor() {
         // Given
         UUID id = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
         CardNumber cardNumber = new CardNumber(VALID_CARD_NUMBER);
 
         // When
-        CreditCard card = new CreditCard(id, cardNumber, VALID_CVV, "12/26", "tok_123", VALID_CARDHOLDER);
+        CreditCard card = new CreditCard(id, customerId, cardNumber, VALID_CVV, "12/26", "tok_123", VALID_CARDHOLDER);
 
         // Then
         assertThat(card.getId()).isEqualTo(id);
+        assertThat(card.getCustomerId()).isEqualTo(customerId);
         assertThat(card.getCardNumber()).isEqualTo(cardNumber);
         assertThat(card.getToken()).isEqualTo("tok_123");
     }

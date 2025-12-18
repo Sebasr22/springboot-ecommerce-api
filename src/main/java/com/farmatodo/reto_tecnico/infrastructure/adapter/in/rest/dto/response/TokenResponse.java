@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Card tokenization response with masked card information")
 public class TokenResponse {
 
+    @Schema(description = "ID of the customer who owns this card", example = "123e4567-e89b-12d3-a456-426614174000")
+    private java.util.UUID customerId;
+
     @Schema(description = "Generated payment token", example = "tok_1a2b3c4d5e6f7g8h")
     private String token;
 

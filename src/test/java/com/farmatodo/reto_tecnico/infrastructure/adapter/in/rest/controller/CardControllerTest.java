@@ -49,12 +49,14 @@ class CardControllerTest {
     private TokenizeCardUseCase tokenizeCardUseCase;
 
     private CreditCard tokenizedCard;
+    private static final UUID TEST_CUSTOMER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
     @BeforeEach
     void setUp() {
         // Set up a valid tokenized card for success scenarios
         tokenizedCard = CreditCard.builder()
                 .id(UUID.randomUUID())
+                .customerId(TEST_CUSTOMER_ID)
                 .cardNumber(new CardNumber("4532015112830366"))
                 .cvv("123")
                 .expirationDate("12/25")
@@ -69,6 +71,7 @@ class CardControllerTest {
         // Given: Valid tokenization request
         String requestBody = """
             {
+                "customerId": "123e4567-e89b-12d3-a456-426614174000",
                 "cardNumber": "4532015112830366",
                 "cvv": "123",
                 "expirationDate": "12/25",
@@ -85,6 +88,7 @@ class CardControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.customerId").value("123e4567-e89b-12d3-a456-426614174000"))
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.maskedCardNumber").value("************0366"))
                 .andExpect(jsonPath("$.lastFourDigits").value("0366"))
@@ -232,6 +236,7 @@ class CardControllerTest {
         // Given: Valid request but tokenization fails
         String requestBody = """
             {
+                "customerId": "123e4567-e89b-12d3-a456-426614174000",
                 "cardNumber": "4532015112830366",
                 "cvv": "123",
                 "expirationDate": "12/25",
@@ -314,6 +319,7 @@ class CardControllerTest {
         // Given: Valid request with 4-digit CVV (AMEX format)
         String requestBody = """
             {
+                "customerId": "123e4567-e89b-12d3-a456-426614174000",
                 "cardNumber": "4532015112830366",
                 "cvv": "1234",
                 "expirationDate": "12/25",

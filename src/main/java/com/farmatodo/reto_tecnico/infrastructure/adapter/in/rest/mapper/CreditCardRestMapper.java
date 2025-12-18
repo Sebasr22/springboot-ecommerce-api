@@ -22,6 +22,7 @@ public interface CreditCardRestMapper {
      * @return domain credit card
      */
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
+    @Mapping(target = "customerId", source = "customerId")
     @Mapping(target = "cardNumber", expression = "java(new CardNumber(request.getCardNumber()))")
     @Mapping(target = "token", ignore = true) // Set by tokenization service
     CreditCard toDomain(TokenizeCardRequest request);

@@ -94,6 +94,7 @@ class PaymentControllerTest {
         String requestBody = """
             {
                 "creditCard": {
+                    "customerId": "123e4567-e89b-12d3-a456-426614174000",
                     "cardNumber": "4532015112830366",
                     "cvv": "123",
                     "expirationDate": "12/25",
@@ -135,6 +136,7 @@ class PaymentControllerTest {
         String requestBody = """
             {
                 "creditCard": {
+                    "customerId": "123e4567-e89b-12d3-a456-426614174000",
                     "cardNumber": "4532015112830366",
                     "cvv": "123",
                     "expirationDate": "12/25",
@@ -172,6 +174,7 @@ class PaymentControllerTest {
         String requestBody = """
             {
                 "creditCard": {
+                    "customerId": "123e4567-e89b-12d3-a456-426614174000",
                     "cardNumber": "4532015112830366",
                     "cvv": "123",
                     "expirationDate": "12/25",
@@ -317,6 +320,7 @@ class PaymentControllerTest {
         String requestBody = """
             {
                 "creditCard": {
+                    "customerId": "123e4567-e89b-12d3-a456-426614174000",
                     "cardNumber": "4532015112830366",
                     "cvv": "123",
                     "expirationDate": "12/25",

@@ -42,4 +42,12 @@ public interface CreditCardJpaRepository extends JpaRepository<CreditCardEntity,
      * @return Optional containing credit card if found
      */
     Optional<CreditCardEntity> findByToken(String token);
+
+    /**
+     * Finds all credit cards belonging to a customer.
+     *
+     * @param customerId the customer ID
+     * @return list of credit cards for the customer
+     */
+    java.util.List<CreditCardEntity> findByCustomerId(UUID customerId);
 }
