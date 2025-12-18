@@ -2377,3 +2377,67 @@ GOAL: I want to be confident that if all tests pass, the API is working perfectl
 - Tests agregados: 29 nuevos tests
 - Cobertura de controladores: 100% (7/7)
 - Todos los tests pasan exitosamente
+
+## Prompt #23: Tests de Infraestructura - Capa de Persistencia
+**Fecha**: 2025-12-17
+**Fase**: Testing / Quality Assurance (Fase 2)
+
+### Contexto
+Después de la auditoría inicial (Prompt #22), la cobertura total estaba en 49%. Se identificó que la capa "Infrastructure > Persistence" tenía 0% de cobertura, incluyendo Entities, Mappers, Adapters y Converters.
+
+### Prompt Completo
+```
+We have reviewed the JaCoCo coverage report and we are currently at 49% total coverage. The requirement is 80%.
+
+The report shows that the "Infrastructure > Persistence" layer is completely untested (0% coverage). This includes:
+- Entities
+- Mappers (MapStruct/ModelMapper)
+- Adapters (Repository implementations)
+- Converters
+
+Please ACT as a Java QA Engineer and generate Unit Tests specifically for these packages.
+
+Follow this plan:
+1. Persistence Mappers & Converters: Create unit tests to verify that DTOs convert to Entities correctly and vice-versa.
+2. Persistence Adapters: Create unit tests using @ExtendWith(MockitoExtension.class). Mock the Spring Data JpaRepository and verify that your Adapter calls the repository methods correctly.
+3. Entities: Create simple POJO tests to verify Getters/Setters/Builders (this is "cheap" coverage but helps reach the 80% goal).
+4. Email Adapter: Create a test for the EmailAdapter mocking the JavaMailSender.
+
+GOAL: Bring these packages from 0% to at least 80% to raise the overall project average.
+```
+
+### Resultado Generado
+
+**Archivos Creados (88 nuevos tests)**:
+
+| Archivo | Tests | Descripción |
+|---------|-------|-------------|
+| CustomerMapperTest.java | 5 | MapStruct Domain↔Entity |
+| ProductMapperTest.java | 8 | MapStruct Domain↔Entity |
+| CustomerRepositoryAdapterTest.java | 11 | Adapter con mocked JpaRepository |
+| ProductRepositoryAdapterTest.java | 14 | Adapter con mocked JpaRepository |
+| CustomerEntityTest.java | 6 | POJO getters/setters/builder |
+| ProductEntityTest.java | 7 | POJO getters/setters/builder |
+| OrderEntityTest.java | 10 | POJO + lifecycle callbacks |
+| OrderItemEntityTest.java | 7 | POJO + relationships |
+| CryptoConverterTest.java | 13 | AES-GCM encryption/decryption |
+| JavaMailEmailAdapterTest.java | 7 | Email sending con mocked sender |
+| **TOTAL** | **88 tests** | |
+
+**Resultado Final**:
+```
+[WARNING] Tests run: 247, Failures: 0, Errors: 0, Skipped: 1
+[INFO] BUILD SUCCESS
+```
+
+**Incremento de Tests**:
+- Antes: 159 tests
+- Después: 247 tests (+88 tests)
+- Incremento: +55%
+
+**Cobertura por Capa**:
+- Persistence Mappers: 0% → ~80%
+- Persistence Adapters: 0% → ~80%
+- Persistence Entities: 0% → ~85%
+- CryptoConverter: 0% → ~90%
+- EmailAdapter: 0% → ~75%
