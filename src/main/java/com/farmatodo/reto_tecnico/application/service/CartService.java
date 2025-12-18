@@ -156,6 +156,7 @@ public class CartService implements AddToCartUseCase, GetCartUseCase, CheckoutCa
      */
     private OrderItem convertToOrderItem(CartItem cartItem) {
         return OrderItem.builder()
+                .id(UUID.randomUUID())
                 .product(cartItem.getProduct())
                 .quantity(cartItem.getQuantity())
                 .unitPrice(cartItem.getUnitPrice())
