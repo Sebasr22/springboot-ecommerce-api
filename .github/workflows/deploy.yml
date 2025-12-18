@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # 1. INTEGRACIÓN CONTINUA (CI)
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Run Tests
+        run: ./mvnw clean verify
+
+  # 2. DESPLIEGUE CONTINUO (CD)
+  deploy:
+    name: Deploy to GCP VM
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy files via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          source: "."
+          target: "~/farmatodo-backend"
+          rm: true
+
+      - name: Execute Remote Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          script: |
+            cd ~/farmatodo-backend
+            echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
+            echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> .env
+            echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+            echo "SPRING_MAIL_HOST=mailhog" >> .env
+            echo "SPRING_MAIL_PORT=1025" >> .env
+            
+            sudo docker compose up -d --build --remove-orphans
+            sudo docker image prune -f
