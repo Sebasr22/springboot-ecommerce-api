@@ -20,6 +20,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+      
+      # 👇 ESTE PASO ES CRÍTICO PARA WINDOWS 👇
+      - name: Grant execute permission for mvnw
+        run: chmod +x mvnw
           
       - name: Run Tests
         run: ./mvnw clean verify
@@ -52,11 +56,20 @@ jobs:
           key: ${{ secrets.GCP_SSH_KEY }}
           script: |
             cd ~/farmatodo-backend
+            
+            # Generar .env completo (Secretos + Configuración estándar)
             echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
             echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> .env
             echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+            
+            # Variables no secretas (necesarias para docker-compose)
+            echo "DB_USER=postgres" >> .env
+            echo "DB_NAME=farmatodo_db" >> .env
+            echo "DB_PORT=5432" >> .env
+            echo "APP_PORT=8080" >> .env
             echo "SPRING_MAIL_HOST=mailhog" >> .env
             echo "SPRING_MAIL_PORT=1025" >> .env
             
+            # Ejecutar Docker (SIN SUDO)
             docker compose up -d --build --remove-orphans
             docker image prune -f
