@@ -1,8 +1,6 @@
 package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice;
 
 import com.farmatodo.reto_tecnico.domain.exception.*;
-import lombok.Builder;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -189,15 +187,5 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.internalServerError().body(response);
-    }
-
-    @Data
-    @Builder
-    public static class ErrorResponse {
-        private LocalDateTime timestamp;
-        private int status;
-        private String error;
-        private String message;
-        private Map<String, String> validationErrors;
     }
 }

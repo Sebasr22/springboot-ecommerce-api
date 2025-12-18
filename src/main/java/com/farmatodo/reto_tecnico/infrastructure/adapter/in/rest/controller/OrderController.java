@@ -9,6 +9,7 @@ import com.farmatodo.reto_tecnico.domain.model.Product;
 import com.farmatodo.reto_tecnico.domain.port.in.CreateOrderUseCase;
 import com.farmatodo.reto_tecnico.domain.port.in.SearchProductUseCase;
 import com.farmatodo.reto_tecnico.domain.port.out.OrderRepositoryPort;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice.ErrorResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request.CreateOrderRequest;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request.OrderItemRequest;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.OrderResponse;
@@ -68,25 +69,42 @@ public class OrderController {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid request - validation errors or missing required fields",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid or missing API key"
+            description = "Unauthorized - Invalid or missing API key",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "404",
             description = "Product or customer not found",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "409",
             description = "Insufficient stock for requested products",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Internal server error"
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<OrderResponse> createOrder(
@@ -185,16 +203,27 @@ public class OrderController {
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid or missing API key"
+            description = "Unauthorized - Invalid or missing API key",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "404",
             description = "Order not found",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Internal server error"
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<OrderResponse> getOrderById(

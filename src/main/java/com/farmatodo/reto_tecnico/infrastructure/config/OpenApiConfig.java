@@ -65,7 +65,7 @@ public class OpenApiConfig {
 
                         Click the **Authorize** button above to configure your API key.
 
-                        **Default API Key for testing**: `production_api_key_123`
+                        **Default API Key for testing**: `default-dev-key-change-in-production`
                         """)
                 .version("1.0.0")
                 .contact(new Contact()
@@ -88,6 +88,6 @@ public class OpenApiConfig {
                 .type(SecurityScheme.Type.APIKEY)
                 .in(SecurityScheme.In.HEADER)
                 .name("X-API-KEY")
-                .description("API Key for authentication. Use: `production_api_key_123` for testing.");
+                .description("API Key for authentication. Use: `default-dev-key-change-in-production` for testing.");
     }
 }

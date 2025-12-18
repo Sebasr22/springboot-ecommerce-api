@@ -2,6 +2,7 @@ package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.controller;
 
 import com.farmatodo.reto_tecnico.domain.model.Customer;
 import com.farmatodo.reto_tecnico.domain.port.in.RegisterCustomerUseCase;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice.ErrorResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request.CreateCustomerRequest;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.CustomerResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.mapper.CustomerRestMapper;
@@ -51,20 +52,34 @@ public class CustomerController {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid request - validation errors",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid or missing API key"
+            description = "Unauthorized - Invalid or missing API key",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict - Customer with email already exists",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Internal server error"
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<CustomerResponse> registerCustomer(

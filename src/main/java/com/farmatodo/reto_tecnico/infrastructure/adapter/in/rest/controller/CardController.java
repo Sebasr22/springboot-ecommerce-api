@@ -2,6 +2,7 @@ package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.controller;
 
 import com.farmatodo.reto_tecnico.domain.model.CreditCard;
 import com.farmatodo.reto_tecnico.domain.port.in.TokenizeCardUseCase;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice.ErrorResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request.TokenizeCardRequest;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.TokenResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.mapper.CreditCardRestMapper;
@@ -51,15 +52,26 @@ public class CardController {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid request - validation errors",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid or missing API key"
+            description = "Unauthorized - Invalid or missing API key",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Tokenization failed - internal error"
+            description = "Tokenization failed - internal error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<TokenResponse> tokenizeCard(

@@ -5,6 +5,7 @@ import com.farmatodo.reto_tecnico.domain.model.CreditCard;
 import com.farmatodo.reto_tecnico.domain.model.Order;
 import com.farmatodo.reto_tecnico.domain.port.in.ProcessPaymentUseCase;
 import com.farmatodo.reto_tecnico.domain.port.out.OrderRepositoryPort;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice.ErrorResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request.ProcessPaymentRequest;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.PaymentResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.mapper.CreditCardRestMapper;
@@ -58,25 +59,42 @@ public class PaymentController {
         @ApiResponse(
             responseCode = "400",
             description = "Invalid request - validation errors or missing required fields",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid or missing API key"
+            description = "Unauthorized - Invalid or missing API key",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "402",
             description = "Payment Required - Payment failed after all retry attempts",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "404",
             description = "Order not found",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Internal server error - tokenization or payment processing failed"
+            description = "Internal server error - tokenization or payment processing failed",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<PaymentResponse> processPayment(

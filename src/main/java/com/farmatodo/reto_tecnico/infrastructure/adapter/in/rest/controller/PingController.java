@@ -2,6 +2,10 @@ package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.controller;
 
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.PingResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +34,16 @@ public class PingController {
             summary = "Ping endpoint",
             description = "Returns 'pong' to verify the application is running and responding to requests"
     )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "System is healthy and responding",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = PingResponse.class)
+            )
+        )
+    })
     @GetMapping("/ping")
     public ResponseEntity<PingResponse> ping() {
         PingResponse response = PingResponse.builder()

@@ -5,6 +5,7 @@ import com.farmatodo.reto_tecnico.domain.model.Order;
 import com.farmatodo.reto_tecnico.domain.port.in.AddToCartUseCase;
 import com.farmatodo.reto_tecnico.domain.port.in.CheckoutCartUseCase;
 import com.farmatodo.reto_tecnico.domain.port.in.GetCartUseCase;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice.ErrorResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.request.AddCartItemRequest;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.CartResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.CheckoutResponse;
@@ -51,9 +52,30 @@ public class CartController {
                     description = "Product added to cart successfully",
                     content = @Content(schema = @Schema(implementation = CartResponse.class))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "404", description = "Product not found"),
-            @ApiResponse(responseCode = "409", description = "Insufficient stock")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Product not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Insufficient stock",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
     })
     public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody AddCartItemRequest request) {
         log.info("Adding product {} (quantity: {}) to cart for customer: {}",
@@ -83,7 +105,14 @@ public class CartController {
                     description = "Cart retrieved successfully",
                     content = @Content(schema = @Schema(implementation = CartResponse.class))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid customer ID")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid customer ID",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
     })
     public ResponseEntity<CartResponse> getCart(@PathVariable UUID customerId) {
         log.info("Retrieving cart for customer: {}", customerId);
@@ -107,9 +136,30 @@ public class CartController {
                     description = "Checkout successful, order created",
                     content = @Content(schema = @Schema(implementation = CheckoutResponse.class))
             ),
-            @ApiResponse(responseCode = "400", description = "Cart is empty or invalid"),
-            @ApiResponse(responseCode = "404", description = "Cart or customer not found"),
-            @ApiResponse(responseCode = "409", description = "Insufficient stock for one or more items")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Cart is empty or invalid",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cart or customer not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Insufficient stock for one or more items",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
     })
     public ResponseEntity<CheckoutResponse> checkout(@PathVariable UUID customerId) {
         log.info("Processing checkout for customer: {}", customerId);

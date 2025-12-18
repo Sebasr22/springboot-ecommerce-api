@@ -2,6 +2,7 @@ package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.controller;
 
 import com.farmatodo.reto_tecnico.domain.model.Product;
 import com.farmatodo.reto_tecnico.domain.port.in.SearchProductUseCase;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice.ErrorResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.dto.response.ProductResponse;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.mapper.ProductRestMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,12 +52,18 @@ public class ProductController {
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Invalid or missing API key",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
             description = "Internal server error",
-            content = @Content(mediaType = "application/json")
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<List<ProductResponse>> searchProducts(
@@ -108,11 +115,19 @@ public class ProductController {
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid or missing API key"
+            description = "Unauthorized - Invalid or missing API key",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Internal server error"
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     public ResponseEntity<List<ProductResponse>> getAllProducts() {

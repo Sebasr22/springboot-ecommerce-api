@@ -19,11 +19,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Payment processing request. Provide either paymentToken (for existing token) OR creditCard (for new card that needs tokenization)")
+@Schema(description = "Payment processing request. **Typical usage**: provide paymentToken (if card was tokenized previously). **Alternative**: provide creditCard object for new card (will be tokenized automatically).")
 public class ProcessPaymentRequest {
 
     @Schema(
-        description = "Existing payment token from previous tokenization. If provided, creditCard is ignored.",
+        description = "Existing payment token from previous tokenization (most common flow). Use this if customer already tokenized their card.",
         example = "tok_3fa85f64-5717-4562-b3fc-2c963f66afa6",
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
@@ -31,8 +31,9 @@ public class ProcessPaymentRequest {
 
     @Valid
     @Schema(
-        description = "Credit card details for payment (required if paymentToken not provided). Card will be tokenized before payment.",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+        description = "Credit card details for payment (only if paymentToken not provided). Card will be tokenized automatically before payment processing.",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        hidden = true
     )
     private TokenizeCardRequest creditCard;
 }

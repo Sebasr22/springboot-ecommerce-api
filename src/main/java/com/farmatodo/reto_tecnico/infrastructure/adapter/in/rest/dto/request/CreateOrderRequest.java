@@ -26,36 +26,40 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request to create a new order. Provide either customerId (for existing customer) OR complete customer data (for new customer)")
+@Schema(description = "Request to create a new order. **Typical usage**: provide customerId + items for existing customers. **Alternative**: provide all customer fields (name/email/phone/address) + items for guest checkout (new customers).")
 public class CreateOrderRequest {
 
-    @Schema(description = "Existing customer ID (UUID). If provided, customer data fields are ignored",
+    @Schema(description = "Existing customer ID (UUID). Use this for registered customers (most common flow).",
             example = "123e4567-e89b-12d3-a456-426614174000",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private UUID customerId;
 
     @Size(min = 2, max = 255, message = "Customer name must be between 2 and 255 characters")
-    @Schema(description = "Customer full name (required if customerId not provided)",
+    @Schema(description = "Customer full name (only for guest checkout when customerId not provided)",
             example = "Juan Pérez",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            hidden = true)
     private String customerName;
 
     @Email(message = "Email must be valid")
-    @Schema(description = "Customer email address (required if customerId not provided)",
+    @Schema(description = "Customer email address (only for guest checkout when customerId not provided)",
             example = "juan.perez@example.com",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            hidden = true)
     private String customerEmail;
 
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone must contain only digits and be between 10 and 15 characters")
-    @Schema(description = "Customer phone number, digits only (required if customerId not provided)",
+    @Schema(description = "Customer phone number, digits only (only for guest checkout when customerId not provided)",
             example = "573001234567",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            hidden = true)
     private String customerPhone;
 
     @Size(min = 5, max = 500, message = "Address must be between 5 and 500 characters")
-    @Schema(description = "Customer delivery address (required if customerId not provided)",
+    @Schema(description = "Customer delivery address (only for guest checkout when customerId not provided)",
             example = "Calle 123 #45-67, Bogotá",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            hidden = true)
     private String customerAddress;
 
     @NotEmpty(message = "Order must have at least one item")
