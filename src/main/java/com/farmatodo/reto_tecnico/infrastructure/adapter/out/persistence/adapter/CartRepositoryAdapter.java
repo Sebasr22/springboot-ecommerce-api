@@ -5,9 +5,11 @@ import com.farmatodo.reto_tecnico.domain.model.CartItem;
 import com.farmatodo.reto_tecnico.domain.port.out.CartRepositoryPort;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.entity.CartEntity;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.entity.CartItemEntity;
+import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.entity.ProductEntity;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.mapper.CartItemMapper;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.mapper.CartMapper;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.repository.CartJpaRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ public class CartRepositoryAdapter implements CartRepositoryPort {
     private final CartJpaRepository jpaRepository;
     private final CartMapper cartMapper;
     private final CartItemMapper cartItemMapper;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -43,6 +46,14 @@ public class CartRepositoryAdapter implements CartRepositoryPort {
         // Convert and add items with bidirectional relationship
         for (CartItem domainItem : cart.getItems()) {
             CartItemEntity itemEntity = cartItemMapper.toEntity(domainItem);
+
+            // FIX: Use EntityManager.getReference() to get a managed ProductEntity reference
+            // instead of the transient one created by the mapper.
+            // This prevents TransientPropertyValueException when persisting CartItemEntity.
+            UUID productId = domainItem.getProduct().getId();
+            ProductEntity managedProduct = entityManager.getReference(ProductEntity.class, productId);
+            itemEntity.setProduct(managedProduct);
+
             entity.addItem(itemEntity);
         }
 

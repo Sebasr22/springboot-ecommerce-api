@@ -10,6 +10,7 @@ import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.entity.
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.mapper.CartItemMapper;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.mapper.CartMapper;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.repository.CartJpaRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -45,6 +47,9 @@ class CartRepositoryAdapterTest {
 
     @Mock
     private CartItemMapper cartItemMapper;
+
+    @Mock
+    private EntityManager entityManager;
 
     @InjectMocks
     private CartRepositoryAdapter cartRepositoryAdapter;
@@ -113,8 +118,10 @@ class CartRepositoryAdapterTest {
         @DisplayName("Should save cart successfully")
         void shouldSaveCartSuccessfully() {
             // Given
+            ProductEntity managedProductEntity = testCartEntity.getItems().get(0).getProduct();
             when(cartMapper.toEntity(testCart)).thenReturn(testCartEntity);
             when(cartItemMapper.toEntity(any(CartItem.class))).thenReturn(testCartEntity.getItems().get(0));
+            when(entityManager.getReference(eq(ProductEntity.class), any(UUID.class))).thenReturn(managedProductEntity);
             when(jpaRepository.save(any(CartEntity.class))).thenReturn(testCartEntity);
             when(cartMapper.toDomain(testCartEntity)).thenReturn(testCart);
 
@@ -125,6 +132,7 @@ class CartRepositoryAdapterTest {
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(testCart.getId());
             verify(jpaRepository).save(any(CartEntity.class));
+            verify(entityManager).getReference(eq(ProductEntity.class), any(UUID.class));
         }
 
         @Test

@@ -2984,3 +2984,53 @@ GOAL: After applying these tests, mvn clean test should report >85%% coverage.
 
 ---
 
+
+
+## Prompt #28: Fix TransientPropertyValueException in CartItem (Add to Cart 500 Error)
+**Fecha**: 2025-12-18
+**Fase**: Bugfix/Producción
+
+### Contexto
+Error crítico 500 en endpoint "Add to Cart". El error `org.hibernate.TransientPropertyValueException: Not-null property references a transient value` ocurre al guardar un `CartItemEntity` que contiene un `ProductEntity`.
+
+El problema raíz es que el MapStruct mapper crea una nueva instancia de `ProductEntity` (transient) en lugar de obtener una referencia manejada por Hibernate.
+
+### Prompt Completo
+```
+Act as a Senior Backend Engineer.
+
+I have a critical 500 Error in my "Add to Cart" endpoint and I need you to FIX IT directly in the repository.
+
+CONTEXT:
+- Architecture: Hexagonal (Ports & Adapters).
+- Stack: Spring Boot 3, JPA/Hibernate.
+- The Error: org.hibernate.TransientPropertyValueException: Not-null property references a transient value.
+- Location: It happens when saving a CartItemEntity that contains a ProductEntity.
+
+THE PROBLEM: In the Persistence Adapter (likely CartRepositoryAdapter.java or its Mapper), we are creating a new ProductEntity(id) manually to map the Domain Model to the Entity. Hibernate rejects this because it considers it a "new" (transient) object, but the product ALREADY exists in the database.
+
+WHAT WE TRIED (AND FAILED): We tried adding CascadeType.MERGE in the Entity. It didn't work reliably. Do not rely solely on that.
+
+YOUR TASK:
+1. Locate the CartRepositoryAdapter.java (or the relevant Mapper used by it).
+2. MODIFY the code to fetch the existing Product reference from the database before assigning it to the CartItemEntity.
+3. Use EntityManager.getReference() (preferred for performance) or ProductRepository.findById() to get the managed entity.
+4. Ensure that when we save the Cart, the Product inside the Item is the one managed by Hibernate, not a new instance.
+```
+
+### Resultado Generado
+**Solución implementada:**
+- Modificado `CartRepositoryAdapter.java` para usar `EntityManager.getReference()` 
+- Se obtiene la referencia manejada del `ProductEntity` antes de asignarla al `CartItemEntity`
+- Esto evita crear instancias transient y resuelve el `TransientPropertyValueException`
+
+**Archivos modificados:**
+- `infrastructure/adapter/out/persistence/adapter/CartRepositoryAdapter.java`
+
+**Cambio técnico:**
+```java
+// Antes: cartItemMapper.toEntity() creaba un ProductEntity transient
+// Después: Se usa entityManager.getReference(ProductEntity.class, productId)
+```
+
+---
