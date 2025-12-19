@@ -248,4 +248,106 @@ class OrderServiceImplTest {
         // Verify order was never saved
         verify(orderRepository, never()).save(any(Order.class));
     }
+
+    @Test
+    @DisplayName("Should use customer's default address when no explicit delivery address is provided")
+    void shouldUseCustomerAddressWhenNoExplicitDeliveryAddressProvided() {
+        // Given: Customer with default address
+        String expectedAddress = "Calle 123 #45-67, Bogotá";
+        assertThat(testCustomer.getAddress()).isEqualTo(expectedAddress);
+
+        // Mock customer exists
+        when(customerRepository.findById(testCustomer.getId()))
+                .thenReturn(Optional.of(testCustomer));
+
+        // Mock product repository
+        when(productRepository.findById(testProduct.getId()))
+                .thenReturn(Optional.of(testProduct));
+
+        // Mock order save (capture the saved order)
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Mock stock update
+        when(productRepository.updateStock(any(UUID.class), anyInt())).thenReturn(testProduct);
+
+        // Act: Create order WITHOUT explicit delivery address (null)
+        Order result = orderService.createOrder(testCustomer, List.of(testOrderItem), null);
+
+        // Assert: Delivery address should be customer's default address
+        assertThat(result).isNotNull();
+        assertThat(result.getDeliveryAddress()).isEqualTo(expectedAddress);
+        assertThat(result.getDeliveryAddress()).isEqualTo(testCustomer.getAddress());
+
+        // Verify order was saved
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should use explicit delivery address when provided")
+    void shouldUseExplicitDeliveryAddressWhenProvided() {
+        // Given: Customer with default address and explicit delivery address
+        String customerDefaultAddress = "Calle 123 #45-67, Bogotá";
+        String explicitDeliveryAddress = "Calle 456 #78-90, Medellín";
+
+        assertThat(testCustomer.getAddress()).isEqualTo(customerDefaultAddress);
+        assertThat(explicitDeliveryAddress).isNotEqualTo(customerDefaultAddress);
+
+        // Mock customer exists
+        when(customerRepository.findById(testCustomer.getId()))
+                .thenReturn(Optional.of(testCustomer));
+
+        // Mock product repository
+        when(productRepository.findById(testProduct.getId()))
+                .thenReturn(Optional.of(testProduct));
+
+        // Mock order save (capture the saved order)
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Mock stock update
+        when(productRepository.updateStock(any(UUID.class), anyInt())).thenReturn(testProduct);
+
+        // Act: Create order WITH explicit delivery address
+        Order result = orderService.createOrder(testCustomer, List.of(testOrderItem), explicitDeliveryAddress);
+
+        // Assert: Delivery address should be the explicit one, NOT customer's default
+        assertThat(result).isNotNull();
+        assertThat(result.getDeliveryAddress()).isEqualTo(explicitDeliveryAddress);
+        assertThat(result.getDeliveryAddress()).isNotEqualTo(testCustomer.getAddress());
+
+        // Verify order was saved
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should use customer's address when explicit delivery address is blank")
+    void shouldUseCustomerAddressWhenExplicitDeliveryAddressIsBlank() {
+        // Given: Customer with default address and blank explicit delivery address
+        String expectedAddress = "Calle 123 #45-67, Bogotá";
+        String blankDeliveryAddress = "   "; // Blank string
+
+        // Mock customer exists
+        when(customerRepository.findById(testCustomer.getId()))
+                .thenReturn(Optional.of(testCustomer));
+
+        // Mock product repository
+        when(productRepository.findById(testProduct.getId()))
+                .thenReturn(Optional.of(testProduct));
+
+        // Mock order save (capture the saved order)
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Mock stock update
+        when(productRepository.updateStock(any(UUID.class), anyInt())).thenReturn(testProduct);
+
+        // Act: Create order with BLANK explicit delivery address
+        Order result = orderService.createOrder(testCustomer, List.of(testOrderItem), blankDeliveryAddress);
+
+        // Assert: Delivery address should fallback to customer's default address
+        assertThat(result).isNotNull();
+        assertThat(result.getDeliveryAddress()).isEqualTo(expectedAddress);
+        assertThat(result.getDeliveryAddress()).isEqualTo(testCustomer.getAddress());
+
+        // Verify order was saved
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
 }

@@ -17,6 +17,7 @@ public interface CreateOrderUseCase {
     /**
      * Creates a new order from customer and items.
      * Validates stock availability before creating the order.
+     * Uses customer's default address as delivery address.
      * @param customer the customer placing the order
      * @param items list of order items
      * @return created order
@@ -26,7 +27,20 @@ public interface CreateOrderUseCase {
     Order createOrder(Customer customer, List<OrderItem> items);
 
     /**
+     * Creates a new order from customer and items with explicit delivery address.
+     * Validates stock availability before creating the order.
+     * @param customer the customer placing the order
+     * @param items list of order items
+     * @param explicitDeliveryAddress optional delivery address (if null, uses customer's address)
+     * @return created order
+     * @throws com.farmatodo.reto_tecnico.domain.exception.InsufficientStockException if stock is not available
+     * @throws IllegalArgumentException if input is invalid
+     */
+    Order createOrder(Customer customer, List<OrderItem> items, String explicitDeliveryAddress);
+
+    /**
      * Creates a new order from customer ID and items.
+     * Uses customer's default address as delivery address.
      * @param customerId the customer ID
      * @param items list of order items
      * @return created order
@@ -34,6 +48,17 @@ public interface CreateOrderUseCase {
      * @throws com.farmatodo.reto_tecnico.domain.exception.InsufficientStockException if stock is not available
      */
     Order createOrder(UUID customerId, List<OrderItem> items);
+
+    /**
+     * Creates a new order from customer ID and items with explicit delivery address.
+     * @param customerId the customer ID
+     * @param items list of order items
+     * @param explicitDeliveryAddress optional delivery address (if null, uses customer's address)
+     * @return created order
+     * @throws com.farmatodo.reto_tecnico.domain.exception.CustomerNotFoundException if customer not found
+     * @throws com.farmatodo.reto_tecnico.domain.exception.InsufficientStockException if stock is not available
+     */
+    Order createOrder(UUID customerId, List<OrderItem> items, String explicitDeliveryAddress);
 
     /**
      * Retrieves an order by ID.

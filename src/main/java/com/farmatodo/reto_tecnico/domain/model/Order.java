@@ -96,11 +96,24 @@ public class Order {
     /**
      * Creates a new order from a customer and items.
      * Automatically calculates total and sets timestamps.
+     * Uses customer's default address as delivery address.
      * @param customer the customer
      * @param items list of order items
      * @return new Order instance
      */
     public static Order create(Customer customer, List<OrderItem> items) {
+        return create(customer, items, null);
+    }
+
+    /**
+     * Creates a new order from a customer and items with explicit delivery address.
+     * Automatically calculates total and sets timestamps.
+     * @param customer the customer
+     * @param items list of order items
+     * @param explicitDeliveryAddress optional delivery address (if null, uses customer's address)
+     * @return new Order instance
+     */
+    public static Order create(Customer customer, List<OrderItem> items, String explicitDeliveryAddress) {
         if (customer == null) {
             throw new IllegalArgumentException("Customer cannot be null");
         }
@@ -111,12 +124,17 @@ public class Order {
         Money total = calculateTotalFromItems(items);
         LocalDateTime now = LocalDateTime.now();
 
+        // Determine final delivery address with fallback logic
+        String finalDeliveryAddress = (explicitDeliveryAddress != null && !explicitDeliveryAddress.isBlank())
+                ? explicitDeliveryAddress
+                : customer.getAddress();
+
         return Order.builder()
                 .id(UUID.randomUUID())
                 .customer(customer)
                 .items(new ArrayList<>(items))
                 .totalAmount(total)
-                .deliveryAddress(customer.getAddress())
+                .deliveryAddress(finalDeliveryAddress)
                 .status(OrderStatus.PENDING)
                 .createdAt(now)
                 .updatedAt(now)

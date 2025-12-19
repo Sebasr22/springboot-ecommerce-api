@@ -124,8 +124,8 @@ class OrderControllerTest {
         // Mock product search
         when(searchProductUseCase.findById(productId)).thenReturn(Optional.of(testProduct));
 
-        // Mock order creation
-        when(createOrderUseCase.createOrder(any(Customer.class), anyList())).thenReturn(testOrder);
+        // Mock order creation (with new overloaded method signature)
+        when(createOrderUseCase.createOrder(any(Customer.class), anyList(), any())).thenReturn(testOrder);
 
         // When & Then: Call endpoint and verify response
         mockMvc.perform(post("/api/v1/orders")
@@ -143,7 +143,7 @@ class OrderControllerTest {
 
         // Verify service calls
         verify(searchProductUseCase, times(1)).findById(productId);
-        verify(createOrderUseCase, times(1)).createOrder(any(Customer.class), anyList());
+        verify(createOrderUseCase, times(1)).createOrder(any(Customer.class), anyList(), any());
     }
 
     @Test
@@ -169,8 +169,8 @@ class OrderControllerTest {
         // Mock product search
         when(searchProductUseCase.findById(productId)).thenReturn(Optional.of(testProduct));
 
-        // Mock insufficient stock exception
-        when(createOrderUseCase.createOrder(any(Customer.class), anyList()))
+        // Mock insufficient stock exception (with new overloaded method signature)
+        when(createOrderUseCase.createOrder(any(Customer.class), anyList(), any()))
                 .thenThrow(new InsufficientStockException(productId, "Acetaminofén 500mg", 100, 500));
 
         // When & Then: Verify 409 status and error message
@@ -183,7 +183,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").value("INSUFFICIENT_STOCK"))
                 .andExpect(jsonPath("$.message").value(containsString("Insufficient stock")));
 
-        verify(createOrderUseCase, times(1)).createOrder(any(Customer.class), anyList());
+        verify(createOrderUseCase, times(1)).createOrder(any(Customer.class), anyList(), any());
     }
 
     @Test
@@ -256,7 +256,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").value("PRODUCT_NOT_FOUND"));
 
         verify(searchProductUseCase, times(1)).findById(nonExistentProductId);
-        verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList());
+        verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList(), any());
     }
 
     @Test
@@ -284,7 +284,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.validationErrors.items").value(containsString("at least one")));
 
         verify(searchProductUseCase, never()).findById(any());
-        verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList());
+        verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList(), any());
     }
 
     @Test
@@ -316,6 +316,6 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.validationErrors.customerEmail").exists());
 
-        verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList());
+        verify(createOrderUseCase, never()).createOrder(any(Customer.class), anyList(), any());
     }
 }

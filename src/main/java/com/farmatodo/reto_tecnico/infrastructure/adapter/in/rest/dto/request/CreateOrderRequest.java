@@ -62,6 +62,15 @@ public class CreateOrderRequest {
             hidden = true)
     private String customerAddress;
 
+    @Size(min = 5, max = 500, message = "Delivery address must be between 5 and 500 characters")
+    @Schema(description = "Delivery address for this specific order (optional). " +
+            "Use this to specify a different delivery address than the customer's default address. " +
+            "If not provided, the system will use the customer's default address. " +
+            "Common use case: sending a gift to another person.",
+            example = "Calle 456 #78-90, Medellín",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String deliveryAddress;
+
     @NotEmpty(message = "Order must have at least one item")
     @Valid
     @Schema(description = "List of items to order", requiredMode = Schema.RequiredMode.REQUIRED)

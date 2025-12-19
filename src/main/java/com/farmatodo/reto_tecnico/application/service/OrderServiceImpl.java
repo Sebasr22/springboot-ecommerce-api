@@ -36,6 +36,12 @@ public class OrderServiceImpl implements CreateOrderUseCase {
     @Override
     @Transactional
     public Order createOrder(Customer customer, List<OrderItem> items) {
+        return createOrder(customer, items, null);
+    }
+
+    @Override
+    @Transactional
+    public Order createOrder(Customer customer, List<OrderItem> items, String explicitDeliveryAddress) {
         log.info("Creating order for customer: {} with {} items", customer.getEmail(), items.size());
 
         // Validate customer exists in repository
@@ -49,8 +55,8 @@ public class OrderServiceImpl implements CreateOrderUseCase {
         // Validate stock availability for all items
         validateStockAvailability(items);
 
-        // Create order
-        Order order = Order.create(customer, items);
+        // Create order with explicit delivery address (or fallback to customer's address)
+        Order order = Order.create(customer, items, explicitDeliveryAddress);
 
         // Reduce stock for all items
         reduceStockForItems(items);
@@ -58,8 +64,8 @@ public class OrderServiceImpl implements CreateOrderUseCase {
         // Save order
         Order savedOrder = orderRepository.save(order);
 
-        log.info("Order created successfully: {} for customer: {}",
-                savedOrder.getId(), customer.getEmail());
+        log.info("Order created successfully: {} for customer: {} with delivery address: {}",
+                savedOrder.getId(), customer.getEmail(), savedOrder.getDeliveryAddress());
 
         return savedOrder;
     }
@@ -67,14 +73,20 @@ public class OrderServiceImpl implements CreateOrderUseCase {
     @Override
     @Transactional
     public Order createOrder(UUID customerId, List<OrderItem> items) {
+        return createOrder(customerId, items, null);
+    }
+
+    @Override
+    @Transactional
+    public Order createOrder(UUID customerId, List<OrderItem> items, String explicitDeliveryAddress) {
         log.info("Creating order for customer ID: {} with {} items", customerId, items.size());
 
         // Find customer
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException(customerId));
 
-        // Delegate to main createOrder method
-        return createOrder(customer, items);
+        // Delegate to main createOrder method with explicit delivery address
+        return createOrder(customer, items, explicitDeliveryAddress);
     }
 
     @Override

@@ -116,17 +116,22 @@ public class OrderController {
         // Build order items with products
         List<OrderItem> orderItems = buildOrderItems(request.getItems());
 
+        // Extract explicit delivery address from request (optional)
+        String explicitDeliveryAddress = request.getDeliveryAddress();
+
         // Create order using appropriate flow
         Order order;
         if (request.getCustomerId() != null) {
             // Flow 1: Use existing customer by ID
-            log.info("Creating order for existing customer ID: {}", request.getCustomerId());
-            order = createOrderUseCase.createOrder(request.getCustomerId(), orderItems);
+            log.info("Creating order for existing customer ID: {} with explicit delivery address: {}",
+                    request.getCustomerId(), explicitDeliveryAddress);
+            order = createOrderUseCase.createOrder(request.getCustomerId(), orderItems, explicitDeliveryAddress);
         } else {
             // Flow 2: Create order with new/provided customer data
-            log.info("Creating order for customer: {}", request.getCustomerEmail());
+            log.info("Creating order for customer: {} with explicit delivery address: {}",
+                    request.getCustomerEmail(), explicitDeliveryAddress);
             Customer customer = mapper.toCustomer(request);
-            order = createOrderUseCase.createOrder(customer, orderItems);
+            order = createOrderUseCase.createOrder(customer, orderItems, explicitDeliveryAddress);
         }
 
         OrderResponse response = mapper.toResponse(order);
