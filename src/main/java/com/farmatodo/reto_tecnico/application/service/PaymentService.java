@@ -7,7 +7,6 @@ import com.farmatodo.reto_tecnico.domain.model.CreditCard;
 import com.farmatodo.reto_tecnico.domain.model.Order;
 import com.farmatodo.reto_tecnico.domain.port.in.ProcessPaymentUseCase;
 import com.farmatodo.reto_tecnico.domain.port.in.TokenizeCardUseCase;
-import com.farmatodo.reto_tecnico.domain.port.out.EmailPort;
 import com.farmatodo.reto_tecnico.domain.port.out.PaymentGatewayPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,8 @@ public class PaymentService implements ProcessPaymentUseCase {
     private final TokenizeCardUseCase tokenizationService;
     private final PaymentTransactionService transactionService;
     private final FarmatodoProperties properties;
-    private final EmailPort emailPort;
+    private final AsyncEmailService asyncEmailService;
+    private final AuditLogService auditLogService;
 
     @Override
     public PaymentResult processPayment(Order order, CreditCard creditCard) {
@@ -128,6 +128,9 @@ public class PaymentService implements ProcessPaymentUseCase {
             attempt++;
             log.info("Payment attempt {}/{} for order: {}", attempt, maxRetries, order.getId());
 
+            // RF8: Log payment attempt to audit trail
+            auditLogService.logPaymentAttempt(order.getId(), attempt, maxRetries);
+
             try {
                 // Attempt payment
                 PaymentGatewayPort.PaymentResult gatewayResult =
@@ -140,8 +143,11 @@ public class PaymentService implements ProcessPaymentUseCase {
                     log.info("Payment successful for order: {} on attempt {}/{}",
                             order.getId(), attempt, maxRetries);
 
-                    // Send payment success email
-                    sendPaymentSuccessEmail(order, gatewayResult.transactionId());
+                    // RF8: Log payment success to audit trail
+                    auditLogService.logPaymentSuccess(order.getId(), gatewayResult.transactionId(), attempt);
+
+                    // Send payment success email asynchronously (Fire-and-Forget)
+                    asyncEmailService.sendPaymentSuccessEmailAsync(order, gatewayResult.transactionId());
 
                     return PaymentResult.success(gatewayResult.transactionId(), attempt);
                 }
@@ -170,12 +176,16 @@ public class PaymentService implements ProcessPaymentUseCase {
         log.error("Payment failed for order: {} after {} attempts", order.getId(), maxRetries);
         transactionService.failPaymentAndSave(order);
 
-        // Send payment failure email
-        sendPaymentFailureEmail(order, maxRetries);
+        // RF8: Log payment failure to audit trail
+        String errorMessage = "Payment rejected after " + maxRetries + " attempts";
+        auditLogService.logPaymentFailure(order.getId(), errorMessage, maxRetries);
+
+        // Send payment failure email asynchronously (Fire-and-Forget)
+        asyncEmailService.sendPaymentFailureEmailAsync(order, maxRetries);
 
         throw new PaymentFailedException(
                 order.getId(),
-                "Payment rejected after " + maxRetries + " attempts",
+                errorMessage,
                 maxRetries
         );
     }
@@ -239,57 +249,4 @@ public class PaymentService implements ProcessPaymentUseCase {
         }
     }
 
-    /**
-     * Sends payment success email to customer.
-     * @param order the order
-     * @param transactionId the transaction ID
-     */
-    private void sendPaymentSuccessEmail(Order order, String transactionId) {
-        try {
-            String customerEmail = order.getCustomer().getEmail().value();
-            String customerName = order.getCustomer().getName();
-            String orderId = order.getId().toString();
-            String totalAmount = order.getTotalAmount().toString();
-
-            emailPort.sendPaymentSuccessEmail(
-                    customerEmail,
-                    customerName,
-                    orderId,
-                    totalAmount,
-                    transactionId
-            );
-
-            log.info("Payment success email sent to: {} for order: {}", customerEmail, orderId);
-        } catch (Exception e) {
-            // Log error but don't fail the payment if email fails
-            log.error("Failed to send payment success email for order: {}", order.getId(), e);
-        }
-    }
-
-    /**
-     * Sends payment failure email to customer.
-     * @param order the order
-     * @param attempts number of attempts made
-     */
-    private void sendPaymentFailureEmail(Order order, int attempts) {
-        try {
-            String customerEmail = order.getCustomer().getEmail().value();
-            String customerName = order.getCustomer().getName();
-            String orderId = order.getId().toString();
-            String totalAmount = order.getTotalAmount().toString();
-
-            emailPort.sendPaymentFailureEmail(
-                    customerEmail,
-                    customerName,
-                    orderId,
-                    totalAmount,
-                    attempts
-            );
-
-            log.info("Payment failure email sent to: {} for order: {}", customerEmail, orderId);
-        } catch (Exception e) {
-            // Log error but don't fail the entire process if email fails
-            log.error("Failed to send payment failure email for order: {}", order.getId(), e);
-        }
-    }
 }

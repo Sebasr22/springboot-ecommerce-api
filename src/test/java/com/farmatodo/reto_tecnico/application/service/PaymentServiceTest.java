@@ -49,6 +49,12 @@ class PaymentServiceTest {
     @Mock
     private FarmatodoProperties.Payment paymentConfig;
 
+    @Mock
+    private AsyncEmailService asyncEmailService;
+
+    @Mock
+    private AuditLogService auditLogService;
+
     @InjectMocks
     private PaymentService paymentService;
 
