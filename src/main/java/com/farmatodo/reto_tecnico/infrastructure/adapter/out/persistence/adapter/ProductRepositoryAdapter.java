@@ -1,5 +1,6 @@
 package com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.adapter;
 
+import com.farmatodo.reto_tecnico.application.config.FarmatodoProperties;
 import com.farmatodo.reto_tecnico.domain.exception.InsufficientStockException;
 import com.farmatodo.reto_tecnico.domain.exception.ProductNotFoundException;
 import com.farmatodo.reto_tecnico.domain.model.Product;
@@ -31,6 +32,7 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
 
     private final ProductJpaRepository jpaRepository;
     private final ProductMapper mapper;
+    private final FarmatodoProperties properties;
 
     @Override
     public Product save(Product product) {
@@ -49,15 +51,17 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
 
     @Override
     public List<Product> findByNameContaining(String query) {
-        log.debug("Searching products by name: '{}'", query);
-        List<ProductEntity> entities = jpaRepository.findByNameContainingIgnoreCase(query);
+        int minStock = properties.getProduct().getMinStockThreshold();
+        log.debug("Searching products by name: '{}' with min stock threshold: {}", query, minStock);
+        List<ProductEntity> entities = jpaRepository.findByNameContainingIgnoreCase(query, minStock);
         return mapper.toDomainList(entities);
     }
 
     @Override
     public List<Product> findAllInStock() {
-        log.debug("Finding all products in stock");
-        List<ProductEntity> entities = jpaRepository.findAllInStock();
+        int minStock = properties.getProduct().getMinStockThreshold();
+        log.debug("Finding all products in stock with min stock threshold: {}", minStock);
+        List<ProductEntity> entities = jpaRepository.findAllInStock(minStock);
         return mapper.toDomainList(entities);
     }
 

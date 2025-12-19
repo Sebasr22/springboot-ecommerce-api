@@ -1,5 +1,6 @@
 package com.farmatodo.reto_tecnico.infrastructure.adapter.out.persistence.adapter;
 
+import com.farmatodo.reto_tecnico.application.config.FarmatodoProperties;
 import com.farmatodo.reto_tecnico.domain.exception.InsufficientStockException;
 import com.farmatodo.reto_tecnico.domain.exception.ProductNotFoundException;
 import com.farmatodo.reto_tecnico.domain.model.Product;
@@ -39,6 +40,9 @@ class ProductRepositoryAdapterTest {
     @Mock
     private ProductMapper mapper;
 
+    @Mock
+    private FarmatodoProperties properties;
+
     @InjectMocks
     private ProductRepositoryAdapter adapter;
 
@@ -66,6 +70,11 @@ class ProductRepositoryAdapterTest {
                 .stock(100)
                 .version(1L)
                 .build();
+
+        // Configure FarmatodoProperties mock (lenient because not all tests use it)
+        FarmatodoProperties.Product productConfig = new FarmatodoProperties.Product();
+        productConfig.setMinStockThreshold(1);
+        lenient().when(properties.getProduct()).thenReturn(productConfig);
     }
 
     @Test
@@ -122,7 +131,8 @@ class ProductRepositoryAdapterTest {
     void shouldFindProductsByNameContaining() {
         // Given
         String query = "Acetaminofén";
-        when(jpaRepository.findByNameContainingIgnoreCase(query)).thenReturn(List.of(productEntity));
+        int minStock = 1;
+        when(jpaRepository.findByNameContainingIgnoreCase(query, minStock)).thenReturn(List.of(productEntity));
         when(mapper.toDomainList(List.of(productEntity))).thenReturn(List.of(product));
 
         // When
@@ -131,14 +141,15 @@ class ProductRepositoryAdapterTest {
         // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("Acetaminofén 500mg");
-        verify(jpaRepository).findByNameContainingIgnoreCase(query);
+        verify(jpaRepository).findByNameContainingIgnoreCase(query, minStock);
     }
 
     @Test
     @DisplayName("Should find all products in stock")
     void shouldFindAllProductsInStock() {
         // Given
-        when(jpaRepository.findAllInStock()).thenReturn(List.of(productEntity));
+        int minStock = 1;
+        when(jpaRepository.findAllInStock(minStock)).thenReturn(List.of(productEntity));
         when(mapper.toDomainList(List.of(productEntity))).thenReturn(List.of(product));
 
         // When
@@ -146,7 +157,7 @@ class ProductRepositoryAdapterTest {
 
         // Then
         assertThat(result).hasSize(1);
-        verify(jpaRepository).findAllInStock();
+        verify(jpaRepository).findAllInStock(minStock);
     }
 
     @Test

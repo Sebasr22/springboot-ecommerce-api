@@ -3034,3 +3034,60 @@ YOUR TASK:
 ```
 
 ---
+
+## Prompt #30: Implementar Filtro de Stock Configurable en Búsqueda de Productos
+**Fecha**: 2025-12-18
+**Fase**: Mejora de Funcionalidad / RF4
+
+### Contexto
+Durante la auditoría del RF4 (Búsqueda de Productos), se identificó que el filtro de stock mínimo configurable (`farmatodo.product.min-stock-threshold`) **NO se estaba aplicando** en la búsqueda por nombre de producto.
+
+**Comportamiento previo:**
+- ✅ `GET /api/v1/products` (sin query) → filtraba por `stock > 0` (hardcoded)
+- ❌ `GET /api/v1/products?search=xxx` → **SIN filtro de stock** (mostraba productos sin inventario)
+
+**Riesgo de negocio:** El endpoint de búsqueda era una "puerta trasera" para ver productos sin stock, violando la regla de negocio.
+
+### Prompt Completo
+```
+el filtro de stock es crítico. Si el negocio dice "no mostrar productos con bajo inventario", la búsqueda no puede ser una puerta trasera para verlos.
+
+Vamos a corregirlo
+```
+
+### Resultado Generado
+**Cambios implementados:**
+
+1. **ProductRepositoryAdapter.java**
+   - Inyectado `FarmatodoProperties` para acceder al threshold configurable
+   - Modificado `findByNameContaining()` para pasar `minStockThreshold` al repository
+   - Modificado `findAllInStock()` para usar threshold en lugar de `> 0` hardcoded
+
+2. **ProductJpaRepository.java**
+   - `findByNameContainingIgnoreCase()`: Agregado parámetro `@Param("minStock")` y filtro `AND p.stock > :minStock`
+   - `findAllInStock()`: Cambiado de `stock > 0` hardcoded a `stock > :minStock` parametrizado
+
+3. **ProductRepositoryAdapterTest.java**
+   - Agregado mock de `FarmatodoProperties` con `lenient()` para evitar UnnecessaryStubbingException
+   - Actualizados tests para verificar que se pasa el parámetro `minStock = 1`
+
+**Queries actualizadas:**
+```java
+// ANTES (búsqueda sin filtro de stock)
+@Query("SELECT p FROM ProductEntity p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+List<ProductEntity> findByNameContainingIgnoreCase(@Param("name") String name);
+
+// DESPUÉS (con filtro configurable)
+@Query("SELECT p FROM ProductEntity p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')) AND p.stock > :minStock")
+List<ProductEntity> findByNameContainingIgnoreCase(@Param("name") String name, @Param("minStock") int minStock);
+```
+
+**Beneficios:**
+- ✅ Consistencia: Todas las búsquedas aplican el mismo filtro de stock
+- ✅ Configurabilidad: El threshold se lee de `application.properties`
+- ✅ Seguridad de negocio: No se pueden ver productos sin inventario por ningún endpoint
+- ✅ Mantenibilidad: Cambiar el threshold no requiere cambios de código
+
+**Tests:** ✅ 495 tests pasando
+
+---

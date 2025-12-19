@@ -20,19 +20,23 @@ import java.util.UUID;
 public interface ProductJpaRepository extends JpaRepository<ProductEntity, UUID> {
 
     /**
-     * Finds products by name (case-insensitive partial match).
+     * Finds products by name (case-insensitive partial match) with minimum stock filter.
+     * Only returns products with stock greater than the specified threshold.
      * @param name the product name to search
-     * @return list of matching products
+     * @param minStock minimum stock threshold (configurable)
+     * @return list of matching products with sufficient stock
      */
-    @Query("SELECT p FROM ProductEntity p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
-    List<ProductEntity> findByNameContainingIgnoreCase(@Param("name") String name);
+    @Query("SELECT p FROM ProductEntity p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')) AND p.stock > :minStock")
+    List<ProductEntity> findByNameContainingIgnoreCase(@Param("name") String name, @Param("minStock") int minStock);
 
     /**
-     * Finds all products with stock > 0.
+     * Finds all products with stock greater than the specified threshold.
+     * Uses configurable minimum stock threshold from application properties.
+     * @param minStock minimum stock threshold (configurable)
      * @return list of in-stock products
      */
-    @Query("SELECT p FROM ProductEntity p WHERE p.stock > 0")
-    List<ProductEntity> findAllInStock();
+    @Query("SELECT p FROM ProductEntity p WHERE p.stock > :minStock")
+    List<ProductEntity> findAllInStock(@Param("minStock") int minStock);
 
     /**
      * ATOMIC STOCK UPDATE - CRITICAL FOR RACE CONDITION FIX.
