@@ -3091,3 +3091,59 @@ List<ProductEntity> findByNameContainingIgnoreCase(@Param("name") String name, @
 **Tests:** ✅ 495 tests pasando
 
 ---
+
+## Prompt #31: Auditoría de Calidad - Requerimientos de Gestión de Pedidos y Pagos
+**Fecha**: 2025-12-19
+**Fase**: Auditoría / Quality Assurance
+
+### Contexto
+El usuario solicita una auditoría de código enfocada en dos requerimientos funcionales críticos del módulo "Gestión de pedidos y pagos":
+1. **Registro completo del pedido**: Verificar que se guarden detalles del cliente, token de tarjeta (no número en plano), y dirección de entrega.
+2. **Notificación de fallo de pago**: Verificar que al agotar los reintentos se envíe un correo electrónico al cliente.
+
+El proyecto está en fase de validación de requerimientos funcionales antes de entrega final.
+
+### Prompt Completo
+```
+Actúa como un Auditor de Calidad de Software (QA Code Reviewer).
+
+Necesito que analices el código actual del proyecto para verificar si cumplimos con dos requerimientos funcionales específicos del módulo "Gestión de pedidos y pagos".
+
+Puntos a auditar:
+1. Registro del Pedido: Verifica si la entidad `Order` y el endpoint de creación de pedidos (`POST /orders` o `/checkout`) están guardando realmente:
+   - Los detalles del cliente (ID o referencia).
+   - La tarjeta de crédito seleccionada (Debe ser un Token o ID de tarjeta, NO el número en plano).
+   - La dirección de entrega (¿Existe este campo en la entidad Order o se asume la del cliente?).
+
+2. Notificación de Fallo: Verifica en el `PaymentService` (o donde esté la lógica de reintentos) si, al agotar todos los intentos (N veces), se está llamando efectivamente al servicio de envío de correos para notificar el fallo final al cliente.
+
+Salida requerida:
+No me respondas con texto aquí. Genera un archivo Markdown llamado `ANALISIS_GAP_PEDIDOS_PAGOS.md` con tus hallazgos.
+Usa este formato:
+- Estado: [CUMPLE / NO CUMPLE / PARCIAL]
+- Hallazgo Técnico: Breve explicación de qué código lo demuestra o qué falta.
+- Recomendación: Si falta algo, qué línea de código agregar.
+
+Sé conciso y directo.
+```
+
+### Resultado Generado
+**Auditoría completada y documentada en:** `ANALISIS_GAP_PEDIDOS_PAGOS.md`
+
+**Hallazgos principales:**
+1. **Detalles del cliente**: ✅ CUMPLE - Order guarda referencia completa al Customer, OrderEntity persiste customerId FK
+2. **Token de tarjeta**: ✅ CUMPLE - Se guarda `paymentToken` encriptado con AES-GCM (CryptoConverter)
+3. **Dirección de entrega**: ⚠️ CUMPLE PARCIAL - Dirección NO está en Order, se asume la del Customer (riesgo de pérdida de histórico)
+4. **Notificación de fallo**: ✅ CUMPLE - PaymentService llama a AsyncEmailService.sendPaymentFailureEmailAsync() al agotar reintentos
+
+**Archivos analizados:**
+- `domain/model/Order.java`
+- `infrastructure/adapter/out/persistence/entity/OrderEntity.java`
+- `infrastructure/adapter/in/rest/controller/OrderController.java`
+- `application/service/PaymentService.java`
+- `application/service/AsyncEmailService.java`
+- `domain/model/Customer.java`
+
+**Recomendación crítica:** Considerar agregar campo `deliveryAddress` a Order para preservar dirección histórica.
+
+---

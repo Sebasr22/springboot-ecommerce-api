@@ -33,6 +33,9 @@ public class OrderResponse {
     @Schema(description = "Customer email", example = "juan.perez@example.com")
     private String customerEmail;
 
+    @Schema(description = "Delivery address for this order", example = "Calle 123, Bogotá")
+    private String deliveryAddress;
+
     @Schema(description = "List of items in the order")
     private List<OrderItemResponse> items;
 

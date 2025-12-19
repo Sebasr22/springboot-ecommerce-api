@@ -37,6 +37,7 @@ public interface OrderMapper {
     @Mapping(target = "customerId", expression = "java(order.getCustomer().getId())")
     @Mapping(target = "totalAmount", expression = "java(order.getTotalAmount().amount())")
     @Mapping(target = "status", expression = "java(mapOrderStatus(order.getStatus()))")
+    @Mapping(target = "deliveryAddress", source = "deliveryAddress")
     @Mapping(target = "items", ignore = true) // Handle separately in adapter
     OrderEntity toEntity(Order order);
 
@@ -55,6 +56,7 @@ public interface OrderMapper {
     @Mapping(target = "createdAt", source = "entity.createdAt")
     @Mapping(target = "updatedAt", source = "entity.updatedAt")
     @Mapping(target = "paymentToken", source = "entity.paymentToken")
+    @Mapping(target = "deliveryAddress", source = "entity.deliveryAddress")
     @Mapping(target = "items", ignore = true) // Handle separately in adapter
     Order toDomain(OrderEntity entity, Customer customer);
 

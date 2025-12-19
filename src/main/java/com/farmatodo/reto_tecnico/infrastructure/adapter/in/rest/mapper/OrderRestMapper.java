@@ -47,6 +47,7 @@ public interface OrderRestMapper {
      */
     @Mapping(target = "customerName", source = "customer.name")
     @Mapping(target = "customerEmail", expression = "java(order.getCustomer().getEmail().value())")
+    @Mapping(target = "deliveryAddress", source = "deliveryAddress")
     @Mapping(target = "items", source = "items")
     @Mapping(target = "totalAmount", expression = "java(order.getTotalAmount().amount())")
     @Mapping(target = "status", expression = "java(order.getStatus().name())")

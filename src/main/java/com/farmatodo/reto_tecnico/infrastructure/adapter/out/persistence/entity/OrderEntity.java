@@ -95,6 +95,13 @@ public class OrderEntity {
     private String paymentToken;
 
     /**
+     * Delivery address snapshot at the time of order creation.
+     * Preserves historical accuracy even if customer updates their profile address.
+     */
+    @Column(name = "delivery_address", nullable = false, length = 500)
+    private String deliveryAddress;
+
+    /**
      * Order status enum matching domain model.
      */
     public enum OrderStatus {

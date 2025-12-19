@@ -1,6 +1,7 @@
 package com.farmatodo.reto_tecnico.domain.model;
 
 import com.farmatodo.reto_tecnico.domain.model.valueobjects.Money;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -72,6 +73,15 @@ public class Order {
     private String paymentToken;
 
     /**
+     * Delivery address snapshot at the time of order creation.
+     * Captured from customer.address to preserve historical accuracy.
+     * This ensures that if a customer updates their profile address,
+     * the order still reflects the original delivery location.
+     */
+    @NotBlank(message = "Delivery address cannot be blank")
+    private String deliveryAddress;
+
+    /**
      * Order status enum.
      */
     public enum OrderStatus {
@@ -106,6 +116,7 @@ public class Order {
                 .customer(customer)
                 .items(new ArrayList<>(items))
                 .totalAmount(total)
+                .deliveryAddress(customer.getAddress())
                 .status(OrderStatus.PENDING)
                 .createdAt(now)
                 .updatedAt(now)

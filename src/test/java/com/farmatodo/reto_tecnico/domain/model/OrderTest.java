@@ -86,6 +86,7 @@ class OrderTest {
         assertThat(order.getStatus()).isEqualTo(Order.OrderStatus.PENDING);
         assertThat(order.getCreatedAt()).isNotNull();
         assertThat(order.getUpdatedAt()).isNotNull();
+        assertThat(order.getDeliveryAddress()).isEqualTo(testCustomer.getAddress());
     }
 
     @Test
@@ -299,5 +300,29 @@ class OrderTest {
         assertThatThrownBy(() -> Order.create(testCustomer, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Order must have at least one item");
+    }
+
+    @Test
+    @DisplayName("Should capture delivery address snapshot from customer")
+    void shouldCaptureDeliveryAddressSnapshotFromCustomer() {
+        // Given: Customer with specific address
+        String expectedAddress = "Calle 123, Bogotá";
+        assertThat(testCustomer.getAddress()).isEqualTo(expectedAddress);
+
+        // When: Create order
+        Order order = Order.create(testCustomer, List.of(item1));
+
+        // Then: Delivery address is captured as snapshot
+        assertThat(order.getDeliveryAddress()).isEqualTo(expectedAddress);
+        assertThat(order.getDeliveryAddress()).isEqualTo(testCustomer.getAddress());
+
+        // Verify: Even if customer address changes, order keeps original address
+        testCustomer.updateContactInfo(
+                testCustomer.getEmail(),
+                testCustomer.getPhone(),
+                "Nueva Dirección 456"
+        );
+        assertThat(testCustomer.getAddress()).isEqualTo("Nueva Dirección 456");
+        assertThat(order.getDeliveryAddress()).isEqualTo(expectedAddress); // Still original
     }
 }
