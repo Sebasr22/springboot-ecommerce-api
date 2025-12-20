@@ -3210,7 +3210,7 @@ Genera y guarda el archivo `DIAGRAMA_ARQUITECTURA.md` con el código Mermaid lis
 
 ---
 
-## Prompt #11: Debug de Incidente Crítico - Error 404 en Todas las Rutas
+## Prompt #33: Debug de Incidente Crítico - Error 404 en Todas las Rutas
 **Fecha**: 2025-12-19
 **Fase**: Debugging / Troubleshooting
 
@@ -3257,7 +3257,7 @@ Genera un archivo llamado `DEBUG_REPORT.md` que contenga:
 
 ---
 
-## Prompt #33: Auditoría Forense de Rutas - Error 404 Persistente
+## Prompt #34: Auditoría Forense de Rutas - Error 404 Persistente
 **Fecha**: 2025-12-20
 **Fase**: Debugging / Troubleshooting
 
@@ -3316,7 +3316,7 @@ Parameter 0 of constructor in FilterConfig required a bean of type
 
 ---
 
-## Prompt #34: Resolución Autónoma del Crash Loop
+## Prompt #35: Resolución Autónoma del Crash Loop
 **Fecha**: 2025-12-20
 **Fase**: Debugging / Hotfix
 
