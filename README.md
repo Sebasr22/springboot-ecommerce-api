@@ -240,6 +240,26 @@ Hemos incluido 2 colecciones especializadas en la carpeta `resources/postman/col
 
 - **Uso ideal:** Validar rápidamente que todo el sistema funciona (Happy Path) sin configurar datos manualmente. Solo dale al botón "Run".
 
+---
+
+## 6. Uso de Inteligencia Artificial
+
+Durante el desarrollo de este proyecto se utilizó **Claude Code** (Anthropic) de manera extensiva para:
+
+- Generación de código base de la aplicación
+- Implementación de arquitectura hexagonal
+- Desarrollo de tests unitarios e integración
+- Resolución de problemas técnicos y debugging
+- Documentación del proyecto
+
+### Documentación de Prompts
+
+Todos los prompts utilizados están documentados en: **[PROMPTS.md](PROMPTS.md)**
+
+El uso de IA como herramienta de desarrollo es parte de las prácticas modernas de ingeniería de software, permitiendo enfocarse en arquitectura, integración y resolución de problemas complejos.
+
+---
+
 ### Resumen de Endpoints de la API
 
 Para documentación completa de la API, visitar [Swagger UI](https://ft-api.srodriguez-tech.com/swagger-ui/index.html)
