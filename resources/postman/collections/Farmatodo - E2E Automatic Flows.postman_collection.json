@@ -1,0 +1,526 @@
+{
+	"info": {
+		"_postman_id": "f921d95a-15ed-4d75-b6fc-991bac4f1f81",
+		"name": "Farmatodo - E2E Automatic Flows",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50915248",
+		"_collection_link": "https://restless-eclipse-496116.postman.co/workspace/Team-Workspace~546b1bb8-1b88-42a1-813b-0dc181cbc2cd/collection/50915248-f921d95a-15ed-4d75-b6fc-991bac4f1f81?action=share&source=collection_link&creator=50915248"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Ping",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{GCP_URL}}/ping",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"ping"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "Register new customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"if (jsonData.id) {\r",
+									"    pm.environment.set(\"customer_id\", jsonData.id);\r",
+									"    console.log(\"Cliente creado: \" + jsonData.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Sebastian Test\",\r\n  \"email\": \"test-{{$randomInt}}@mail.com\",\r\n  \"phone\": \"04144567{{$randomInt}}\", \r\n  \"address\": \"Calle Pruebas 123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/customers",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Search products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"if (Array.isArray(jsonData) && jsonData.length > 0) {\r",
+									"    var firstProduct = jsonData[0];\r",
+									"    pm.environment.set(\"product_id\", firstProduct.id);\r",
+									"    console.log(\"✅ PRODUCTO CAPTURADO: \" + firstProduct.name + \" (\" + firstProduct.id + \")\");\r",
+									"} \r",
+									"else if (jsonData.content && jsonData.content.length > 0) {\r",
+									"    var firstProduct = jsonData.content[0];\r",
+									"    pm.environment.set(\"product_id\", firstProduct.id);\r",
+									"    console.log(\"✅ PRODUCTO CAPTURADO (Paginado): \" + firstProduct.name);\r",
+									"} \r",
+									"else {\r",
+									"    console.error(\"❌ ERROR: No se pudo capturar el ID del producto. Estructura recibida:\", jsonData);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/products?page=0&size=20",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"products"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Acetaminofen",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/products/all",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"all"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Get shopping cart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/cart/:customerId",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"cart",
+								":customerId"
+							],
+							"variable": [
+								{
+									"key": "customerId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add product to cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Producto agregado al carrito\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"customerId\": \"{{customer_id}}\",\r\n  \"productId\": \"{{product_id}}\",\r\n  \"quantity\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/cart/items",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"cart",
+								"items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Checkout cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Checkout exitoso\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"if (jsonData.orderId) {\r",
+									"    pm.environment.set(\"order_id\", jsonData.orderId);\r",
+									"    console.log(\"Orden Creada ID: \" + jsonData.orderId);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/cart/checkout/{{customer_id}}",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"cart",
+								"checkout",
+								"{{customer_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Create new order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"customerId\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n      \"quantity\": 2\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/orders",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/orders/:id",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7f51fb1f-50a6-47a1-a649-5c75c77cbbfc"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cards",
+			"item": [
+				{
+					"name": "Credit card tokenization API",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Tarjeta Tokenizada\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"if (jsonData.token) {\r",
+									"    pm.environment.set(\"payment_token\", jsonData.token);\r",
+									"    console.log(\"Payment Token: \" + jsonData.token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerId\": \"{{customer_id}}\",\r\n    \"cardNumber\": \"4242424242424242\",\r\n    \"cvv\": \"123\",\r\n    \"expirationDate\": \"12/28\",\r\n    \"cardholderName\": \"AUTO TESTER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/cards/tokenize",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"cards",
+								"tokenize"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Process payment for order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Pago Exitoso\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.test(\"Estado de orden actualizado\", function () {\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentToken\": \"{{payment_token}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{GCP_URL}}/api/v1/payments/orders/{{order_id}}",
+							"host": [
+								"{{GCP_URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"payments",
+								"orders",
+								"{{order_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

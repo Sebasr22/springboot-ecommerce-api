@@ -1,0 +1,9 @@
+case_description,customer_id,product_id,quantity,expected_status,expected_error
+Happy Path - Agregar Item,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,47095ff4-e3e5-4681-adc6-a8f4cea37097,2,201,
+Business - Stock Insuficiente,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,47095ff4-e3e5-4681-adc6-a8f4cea37097,9999,409,Insufficient stock
+Validation - Cantidad Cero,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,47095ff4-e3e5-4681-adc6-a8f4cea37097,0,400,at least 1
+Validation - Cantidad Negativa,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,47095ff4-e3e5-4681-adc6-a8f4cea37097,-10,400,at least 1
+Business - Cliente No Existe,123e4567-e89b-12d3-a456-426614174999,47095ff4-e3e5-4681-adc6-a8f4cea37097,1,409,Referenced customer does not exist
+Business - Producto No Existe,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,123e4567-e89b-12d3-a456-426614174999,1,404,Product not found
+Validation - UUID Cliente Malo,id-invalido,47095ff4-e3e5-4681-adc6-a8f4cea37097,1,400,Invalid value
+Validation - UUID Producto Malo,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,id-invalido,1,400,Invalid value

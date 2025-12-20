@@ -1,0 +1,275 @@
+{
+	"info": {
+		"_postman_id": "6443eae5-f41b-48b0-a9be-3926d265dcd1",
+		"name": "Farmatodo - Data-Driven Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50915248",
+		"_collection_link": "https://restless-eclipse-496116.postman.co/workspace/Team-Workspace~546b1bb8-1b88-42a1-813b-0dc181cbc2cd/collection/50915248-6443eae5-f41b-48b0-a9be-3926d265dcd1?action=share&source=collection_link&creator=50915248"
+	},
+	"item": [
+		{
+			"name": "(Done) Register new customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var caseDescription = pm.iterationData.get(\"case_description\");\r",
+							"var expectedStatus = pm.iterationData.get(\"expected_status\");\r",
+							"var expectedError = pm.iterationData.get(\"expected_error\");\r",
+							"\r",
+							"// 1. Validar Status Code\r",
+							"pm.test(\"[\" + caseDescription + \"] Status debe ser \" + expectedStatus, function () {\r",
+							"    pm.response.to.have.status(expectedStatus);\r",
+							"});\r",
+							"\r",
+							"// 2. Validar Mensajes de Error (Solo para casos negativos)\r",
+							"if (expectedStatus >= 400 && expectedError) {\r",
+							"    pm.test(\"[\" + caseDescription + \"] Debe contener error: \" + expectedError, function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        // Ajusta esto si tu backend devuelve el error en 'message', 'error' o 'details'\r",
+							"        var responseText = JSON.stringify(jsonData).toLowerCase();\r",
+							"        pm.expect(responseText).to.include(expectedError.toLowerCase());\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// 3. Validar Estructura en Éxito (Solo Happy Path)\r",
+							"if (expectedStatus == 201 || expectedStatus == 200) {\r",
+							"    pm.test(\"[\" + caseDescription + \"] Debe devolver ID de usuario\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData).to.have.property(\"id\");\r",
+							"        pm.expect(jsonData.email).to.be.a('string');\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"console.log(\"--- Iniciando Generación de Datos ---\");\r",
+							"\r",
+							"// 1. LEER VARIABLES (Sin valores por defecto, leemos crudo del CSV)\r",
+							"var csvEmail = pm.iterationData.get(\"email\");\r",
+							"var csvPhone = pm.iterationData.get(\"phone\");\r",
+							"\r",
+							"// 2. GENERADOR DE EMAIL\r",
+							"if (csvEmail === \"AUTO\") {\r",
+							"    var randomInt = Math.floor(Math.random() * 1000000);\r",
+							"    var dynamicEmail = \"usuario_test_\" + randomInt + \"@mail.com\";\r",
+							"    pm.environment.set(\"final_email\", dynamicEmail);\r",
+							"} else {\r",
+							"    // Si viene vacío (\"\") o null, pasamos eso mismo. Si trae texto, pasamos texto.\r",
+							"    pm.environment.set(\"final_email\", csvEmail);\r",
+							"}\r",
+							"\r",
+							"// 3. GENERADOR DE TELÉFONO\r",
+							"if (csvPhone === \"AUTO\") {\r",
+							"    var randomSuffix = Math.floor(Math.random() * 9000000) + 1000000;\r",
+							"    // Formato 58414XXXXXXX (12 dígitos)\r",
+							"    var dynamicPhone = \"58414\" + randomSuffix;\r",
+							"    pm.environment.set(\"final_phone\", dynamicPhone);\r",
+							"} else {\r",
+							"    // Si el CSV está vacío, esto setea la variable como vacía\r",
+							"    pm.environment.set(\"final_phone\", csvPhone);\r",
+							"}\r",
+							"\r",
+							"console.log(\"Datos a enviar -> Email: [\" + pm.environment.get(\"final_email\") + \"] | Phone: [\" + pm.environment.get(\"final_phone\") + \"]\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{API_KEY}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"{{name}}\",\r\n  \"email\": \"{{final_email}}\",\r\n  \"phone\": \"{{final_phone}}\", \r\n  \"address\": \"{{address}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{GCP_URL}}/api/v1/customers",
+					"host": [
+						"{{GCP_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "(Done) Add product to cart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var caseDescription = pm.iterationData.get(\"case_description\");\r",
+							"var expectedStatus = pm.iterationData.get(\"expected_status\");\r",
+							"var expectedError = pm.iterationData.get(\"expected_error\");\r",
+							"\r",
+							"// 1. Imprimir en consola para debug\r",
+							"console.log(\"Ejecutando caso: \" + caseDescription);\r",
+							"\r",
+							"// 2. Test Principal: Validar Status Code\r",
+							"pm.test(\"[\" + caseDescription + \"] Status debe ser \" + expectedStatus, function () {\r",
+							"    pm.response.to.have.status(expectedStatus);\r",
+							"});\r",
+							"\r",
+							"// 3. Test Secundario: Validar Mensaje de Error (Solo si esperamos error)\r",
+							"if (expectedStatus >= 400 && expectedError) {\r",
+							"    pm.test(\"[\" + caseDescription + \"] Mensaje debe incluir: '\" + expectedError + \"'\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        // Convertimos a string y minúsculas para buscar sin importar el formato exacto\r",
+							"        var responseText = JSON.stringify(jsonData).toLowerCase();\r",
+							"        pm.expect(responseText).to.include(expectedError.toLowerCase());\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// 4. Test Opcional: Verificar que devuelve datos en éxito\r",
+							"if (expectedStatus == 201 || expectedStatus == 200) {\r",
+							"    pm.test(\"[\" + caseDescription + \"] Respuesta exitosa debe tener estructura válida\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        // Ajusta esto según lo que devuelva tu API (ej: id, message, success)\r",
+							"        pm.expect(jsonData).to.be.an('object'); \r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{API_KEY}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"{{customer_id}}\",\r\n  \"productId\": \"{{product_id}}\",\r\n  \"quantity\": {{quantity}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{GCP_URL}}/api/v1/cart/items",
+					"host": [
+						"{{GCP_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"cart",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "(Done) Create new order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var caseDescription = pm.iterationData.get(\"case_description\");\r",
+							"var expectedStatus = pm.iterationData.get(\"expected_status\");\r",
+							"var expectedError = pm.iterationData.get(\"expected_error\");\r",
+							"\r",
+							"console.log(\"--> Test Orden: \" + caseDescription);\r",
+							"\r",
+							"// 1. Validar Status Code\r",
+							"pm.test(\"[\" + caseDescription + \"] Status esperado: \" + expectedStatus, function () {\r",
+							"    pm.response.to.have.status(expectedStatus);\r",
+							"});\r",
+							"\r",
+							"// 2. Validar Mensaje de Error (si aplica)\r",
+							"if (expectedStatus >= 400 && expectedError) {\r",
+							"    pm.test(\"[\" + caseDescription + \"] El error debe mencionar: \" + expectedError, function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        var responseText = JSON.stringify(jsonData).toLowerCase();\r",
+							"        \r",
+							"        // Verifica que la palabra clave del error (ej: \"mayor a 0\") esté en la respuesta\r",
+							"        pm.expect(responseText).to.include(expectedError.toLowerCase());\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// 3. Validar Éxito (Happy Path)\r",
+							"if (expectedStatus == 201 || expectedStatus == 200) {\r",
+							"    pm.test(\"[\" + caseDescription + \"] Orden creada correctamente\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        // Verificar que devuelve la orden o un ID\r",
+							"        pm.expect(jsonData).to.have.property(\"items\");\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{API_KEY}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"{{customer_id}}\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"{{product_id}}\",\r\n      \"quantity\": {{quantity}}\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{GCP_URL}}/api/v1/orders",
+					"host": [
+						"{{GCP_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

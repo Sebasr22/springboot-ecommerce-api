@@ -1,0 +1,9 @@
+case_description,customer_id,card_number,cvv,expiration_date,cardholder_name,expected_status,expected_error
+Happy Path - Visa Valida,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,4242424242424242,123,12/30,SEBAS TESTER,200,
+Validation - Tarjeta Corta,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,4242,123,12/30,SEBAS TESTER,400,Card number must be between 13 and 19
+Validation - Tarjeta Letras,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,42424242ABC4242,123,12/30,SEBAS TESTER,400,Card number must be between 13 and 19
+Validation - CVV Invalido,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,4242424242424242,A12,12/30,SEBAS TESTER,400,CVV must be 3 or 4 digits
+Validation - Fecha Pasada,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,4242424242424242,123,01/20,SEBAS TESTER,400,Credit card has expired
+Validation - Fecha Mes 13,8f159667-41ab-4b9b-bbe6-39e0f4feee8a,4242424242424242,123,13/30,SEBAS TESTER,400,Expiration date must be in MM/YY format
+Business - Cliente No Existe,123e4567-e89b-12d3-a456-426614174999,4242424242424242,123,12/30,SEBAS TESTER,409,Referenced customer does not exist
+Validation - UUID Invalido,id-falso,4242424242424242,123,12/30,SEBAS TESTER,400,Invalid value

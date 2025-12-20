@@ -1,0 +1,11 @@
+case_description,name,email,phone,address,expected_status,expected_error
+Happy Path - Usuario Nuevo,Sebastian Admin,AUTO,AUTO,Calle Principal 1,201,
+Validation - Nombre Vacío,,AUTO,AUTO,Calle 1,400,name
+Validation - Email Formato Inválido,Sebastian User,sebastian-no-arroba,AUTO,Calle 1,400,email
+Validation - Email Vacío,Sebastian User,,AUTO,Calle 1,400,email
+Validation - Teléfono Vacío,Sebastian User,AUTO,,Calle 1,400,phone
+Validation - Dirección Vacía,Sebastian User,AUTO,AUTO,,400,address
+Security - SQL Injection en Nombre, OR 1=1 --,AUTO,AUTO,Calle Hack,201,
+Security - XSS en Dirección,<script>alert(1)</script>,AUTO,AUTO,<img src=x>,201,
+Borde - Nombre Muy Largo,Sebastian.......................................................................................................,AUTO,AUTO,Calle Larga,201,
+Borde - Teléfono con Letras,Sebastian User,AUTO,0414ABCDEFG,Calle 1,400,phone
