@@ -59,7 +59,7 @@ com.farmatodo.reto_tecnico/
 ### Paso 1: Clonar el Repositorio
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Sebasr22/farmatodo-backend-challenge
 cd ft-backend
 ```
 
@@ -93,13 +93,6 @@ SPRING_MAIL_PORT=1025
 APP_PORT=8080
 ```
 
-**Notas Importantes de Configuracion:**
-
-| Escenario | Valor de `DB_HOST` | Valor de `SPRING_MAIL_HOST` |
-|-----------|--------------------|-----------------------------|
-| Ejecutando **dentro de Docker** (stack completo) | `farmatodo-postgres` | `mailhog` |
-| Ejecutando **fuera de Docker** (desarrollo local/tests) | `localhost` | `localhost` |
-
 ### Paso 3: Iniciar la Aplicacion
 
 Ejecutar todos los servicios con Docker Compose:
@@ -122,7 +115,7 @@ Este comando realizara lo siguiente:
 | **Swagger UI** | `http://localhost:8080/swagger-ui.html` | Documentacion de la API |
 | **Health Check** | `http://localhost:8080/ping` | Estado de la aplicacion |
 | **MailHog UI** | `http://localhost:8025` | Interfaz de testing de emails |
-| **PostgreSQL** | `localhost:5432` | Base de datos (puerto externo) |
+| **PostgreSQL** | `localhost:5432` | Base de datos |
 
 ### Comandos Utiles
 
@@ -143,28 +136,14 @@ docker compose up -d --build app
 
 ## 3. Despliegue en GCP y CI/CD (Live Demo)
 
-La aplicación está desplegada en Google Cloud Platform (Cloud Run) y dispone de un pipeline de Integración Continua / Despliegue Continuo (CI/CD).
+La aplicación está desplegada en una Máquina Virtual (Compute Engine) de Google Cloud Platform, orquestada mediante Docker y utilizando Nginx como servidor web y proxy inverso. La gestión de DNS y el apuntamiento del subdominio se realizan a través de Cloudflare. El proyecto dispone de un pipeline de Integración Continua / Despliegue Continuo (CI/CD) completamente automatizado.
 
 ### Enlaces del Entorno Productivo
 
-| Servicio | URL |
-|----------|-----|
-| Aplicación (Cloud Run) | [AGREGAR_URL_APP] |
-| Documentación API (Swagger) | [AGREGAR_URL_SWAGGER] |
-| Servidor de Correos (MailHog) | [AGREGAR_URL_MAILHOG_SI_LA_TIENES] |
-| Pipeline CI/CD (GitHub Actions) | https://github.com/<owner>/<repo>/actions |
-
-### Pipeline de CI/CD (resumen)
-
-El proyecto incluye un workflow automatizado en .github/workflows que asegura la calidad y el despliegue continuo:
-
-1. Build & Test: Ejecuta mvn clean verify para correr pruebas unitarias y de integracion en cada Push.
-
-2. Docker Build: Construye la imagen Docker optimizada.
-
-3. Artifact Registry: Sube la imagen al registro privado de Google Cloud.
-
-4. Deploy: Despliega la nueva version en Cloud Run conectandose a Cloud SQL.
+Aplicación: 
+Documentación API (Swagger): https://ft-api.srodriguez-tech.com/swagger-ui/index.html
+MailHog: 
+Pipeline CI/CD (GitHub Actions): https://github.com/Sebasr22/farmatodo-backend-challenge/actions
 
 ---
 
