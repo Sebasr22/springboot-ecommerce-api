@@ -65,6 +65,7 @@ jobs:
             echo "DB_USER=postgres" >> .env
             echo "DB_NAME=farmatodo_db" >> .env
             echo "DB_PORT=5432" >> .env
+            echo "DB_HOST=postgres" >> .env
             echo "APP_PORT=8080" >> .env
             echo "SPRING_MAIL_HOST=mailhog" >> .env
             echo "SPRING_MAIL_PORT=1025" >> .env
