@@ -75,6 +75,9 @@ class OrderControllerTest {
     @MockBean
     private OrderRepositoryPort orderRepository;
 
+    @MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     private Product testProduct;
     private Customer testCustomer;
     private Order testOrder;

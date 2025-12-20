@@ -1,6 +1,7 @@
 package com.farmatodo.reto_tecnico.application.service;
 
 import com.farmatodo.reto_tecnico.domain.model.AuditLog;
+import com.farmatodo.reto_tecnico.domain.model.EventType;
 import com.farmatodo.reto_tecnico.domain.port.out.AuditLogRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,7 @@ public class AuditLogService {
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID())
                     .traceId(traceId)
-                    .eventType("PAYMENT_ATTEMPT")
+                    .eventType(EventType.PAYMENT_ATTEMPT.name())
                     .entityType("Order")
                     .entityId(orderId)
                     .status("IN_PROGRESS")
@@ -92,7 +93,7 @@ public class AuditLogService {
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID())
                     .traceId(traceId)
-                    .eventType("PAYMENT_SUCCESS")
+                    .eventType(EventType.PAYMENT_SUCCESS.name())
                     .entityType("Order")
                     .entityId(orderId)
                     .status("SUCCESS")
@@ -129,7 +130,7 @@ public class AuditLogService {
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID())
                     .traceId(traceId)
-                    .eventType("PAYMENT_FAILED")
+                    .eventType(EventType.PAYMENT_FAILED.name())
                     .entityType("Order")
                     .entityId(orderId)
                     .status("FAILURE")
@@ -148,8 +149,98 @@ public class AuditLogService {
     }
 
     /**
-     * Generic method to log any event.
-     * Can be used for custom events not covered by specific methods.
+     * Generic method to log any event with EventType enum.
+     * Preferred method for type safety.
+     *
+     * @param eventType type of event (enum)
+     * @param entityType type of entity (e.g., "Order", "Product")
+     * @param entityId ID of the entity
+     * @param status status of the event (e.g., "SUCCESS", "FAILURE")
+     * @param eventData JSON metadata (null if not needed)
+     */
+    @Async("taskExecutor")
+    public void logEvent(
+            EventType eventType,
+            String entityType,
+            UUID entityId,
+            String status,
+            String eventData
+    ) {
+        try {
+            String traceId = MDC.get("traceId");
+
+            log.debug("[AUDIT] Logging event: type={}, entity={}:{}, status={}, traceId={}",
+                    eventType, entityType, entityId, status, traceId);
+
+            AuditLog auditLog = AuditLog.builder()
+                    .id(UUID.randomUUID())
+                    .traceId(traceId)
+                    .eventType(eventType.name())
+                    .entityType(entityType)
+                    .entityId(entityId)
+                    .status(status)
+                    .eventData(eventData)
+                    .build();
+
+            auditLogRepository.save(auditLog);
+
+            log.info("[AUDIT] Event logged: type={}, entity={}:{}, traceId={}",
+                    eventType, entityType, entityId, traceId);
+
+        } catch (Exception e) {
+            log.error("[AUDIT] Failed to log event: type={}, entity={}:{}",
+                    eventType, entityType, entityId, e);
+        }
+    }
+
+    /**
+     * Generic method to log any event with error message.
+     * Convenience method for error scenarios.
+     *
+     * @param eventType type of event (enum)
+     * @param entityType type of entity (e.g., "Order", "Product", "System")
+     * @param entityId ID of the entity (null for system errors)
+     * @param status status of the event (e.g., "SUCCESS", "FAILURE")
+     * @param errorMessage error message (null if successful)
+     */
+    @Async("taskExecutor")
+    public void logEventWithError(
+            EventType eventType,
+            String entityType,
+            UUID entityId,
+            String status,
+            String errorMessage
+    ) {
+        try {
+            String traceId = MDC.get("traceId");
+
+            log.debug("[AUDIT] Logging event with error: type={}, entity={}:{}, status={}, traceId={}",
+                    eventType, entityType, entityId, status, traceId);
+
+            AuditLog auditLog = AuditLog.builder()
+                    .id(UUID.randomUUID())
+                    .traceId(traceId)
+                    .eventType(eventType.name())
+                    .entityType(entityType)
+                    .entityId(entityId)
+                    .status(status)
+                    .errorMessage(errorMessage)
+                    .build();
+
+            auditLogRepository.save(auditLog);
+
+            log.info("[AUDIT] Event with error logged: type={}, entity={}:{}, traceId={}",
+                    eventType, entityType, entityId, traceId);
+
+        } catch (Exception e) {
+            log.error("[AUDIT] Failed to log event: type={}, entity={}:{}",
+                    eventType, entityType, entityId, e);
+        }
+    }
+
+    /**
+     * Generic method to log any event (String-based, for backwards compatibility).
+     * DEPRECATED: Use logEvent(EventType, ...) instead for type safety.
      *
      * @param eventType type of event (e.g., "ORDER_CREATED", "STOCK_REDUCED")
      * @param entityType type of entity (e.g., "Order", "Product")
@@ -157,6 +248,7 @@ public class AuditLogService {
      * @param status status of the event (e.g., "SUCCESS", "FAILURE")
      * @param errorMessage error message (null if successful)
      */
+    @Deprecated
     @Async("taskExecutor")
     public void logEvent(
             String eventType,

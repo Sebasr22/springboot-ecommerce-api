@@ -5,6 +5,7 @@ import com.farmatodo.reto_tecnico.domain.exception.InsufficientStockException;
 import com.farmatodo.reto_tecnico.domain.exception.OrderNotFoundException;
 import com.farmatodo.reto_tecnico.domain.exception.ProductNotFoundException;
 import com.farmatodo.reto_tecnico.domain.model.Customer;
+import com.farmatodo.reto_tecnico.domain.model.EventType;
 import com.farmatodo.reto_tecnico.domain.model.Order;
 import com.farmatodo.reto_tecnico.domain.model.OrderItem;
 import com.farmatodo.reto_tecnico.domain.model.Product;
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements CreateOrderUseCase {
     private final OrderRepositoryPort orderRepository;
     private final CustomerRepositoryPort customerRepository;
     private final ProductRepositoryPort productRepository;
+    private final AuditLogService auditLogService;
 
     @Override
     @Transactional
@@ -66,6 +68,21 @@ public class OrderServiceImpl implements CreateOrderUseCase {
 
         log.info("Order created successfully: {} for customer: {} with delivery address: {}",
                 savedOrder.getId(), customer.getEmail(), savedOrder.getDeliveryAddress());
+
+        // RF8: Log order creation to audit trail
+        String eventData = String.format(
+                "{\"customerId\":\"%s\",\"totalAmount\":%.2f,\"itemsCount\":%d}",
+                customer.getId(),
+                savedOrder.getTotalAmount().amount(),
+                savedOrder.getItems().size()
+        );
+        auditLogService.logEvent(
+                EventType.ORDER_CREATED,
+                "Order",
+                savedOrder.getId(),
+                "SUCCESS",
+                eventData
+        );
 
         return savedOrder;
     }
@@ -158,11 +175,28 @@ public class OrderServiceImpl implements CreateOrderUseCase {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException(item.getProductId()));
 
-            int newStock = product.getStock() - item.getQuantity();
+            int oldStock = product.getStock();
+            int newStock = oldStock - item.getQuantity();
             productRepository.updateStock(product.getId(), newStock);
 
             log.debug("Reduced stock for product {} from {} to {}",
-                    product.getName(), product.getStock(), newStock);
+                    product.getName(), oldStock, newStock);
+
+            // RF8: Log stock reduction to audit trail
+            String eventData = String.format(
+                    "{\"productName\":\"%s\",\"quantityReduced\":%d,\"oldStock\":%d,\"newStock\":%d}",
+                    product.getName(),
+                    item.getQuantity(),
+                    oldStock,
+                    newStock
+            );
+            auditLogService.logEvent(
+                    EventType.STOCK_REDUCED,
+                    "Product",
+                    product.getId(),
+                    "SUCCESS",
+                    eventData
+            );
         }
     }
 

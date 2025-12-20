@@ -23,6 +23,9 @@ class PingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     @Test
     @DisplayName("Should return pong with 200 status and complete response structure")
     void shouldReturnPongWith200Status() throws Exception {

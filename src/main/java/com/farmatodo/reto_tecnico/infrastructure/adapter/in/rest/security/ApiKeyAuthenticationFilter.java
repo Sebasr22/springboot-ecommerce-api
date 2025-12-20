@@ -5,12 +5,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -26,18 +23,27 @@ import java.util.Map;
  * - Returns 401 Unauthorized if API key is missing or invalid
  * - Whitelisted paths: /ping, /actuator/*, /swagger-ui/*, /v3/api-docs/*
  * - API key should be configured via environment variable in production
+ *
+ * NOTE: This filter is NOT a @Component. It is instantiated manually
+ * in FilterConfig to avoid double registration issues.
  */
-@Component
-@RequiredArgsConstructor
 @Slf4j
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String API_KEY_HEADER = "X-API-KEY";
 
-    @Value("${farmatodo.api.key:default-dev-key-change-in-production}")
-    private String configuredApiKey;
-
     private final ObjectMapper objectMapper;
+    private final String configuredApiKey;
+
+    /**
+     * Constructor for manual instantiation in FilterConfig.
+     * @param objectMapper JSON serializer for error responses
+     * @param configuredApiKey the API key to validate against
+     */
+    public ApiKeyAuthenticationFilter(ObjectMapper objectMapper, String configuredApiKey) {
+        this.objectMapper = objectMapper;
+        this.configuredApiKey = configuredApiKey;
+    }
 
     @Override
     protected void doFilterInternal(

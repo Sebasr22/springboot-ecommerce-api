@@ -47,6 +47,9 @@ class OrderServiceImplTest {
     @Mock
     private ProductRepositoryPort productRepository;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 

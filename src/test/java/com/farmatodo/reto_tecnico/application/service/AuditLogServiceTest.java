@@ -1,6 +1,7 @@
 package com.farmatodo.reto_tecnico.application.service;
 
 import com.farmatodo.reto_tecnico.domain.model.AuditLog;
+import com.farmatodo.reto_tecnico.domain.model.EventType;
 import com.farmatodo.reto_tecnico.domain.port.out.AuditLogRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,7 +68,7 @@ class AuditLogServiceTest {
 
         AuditLog saved = captor.getValue();
         assertThat(saved.getTraceId()).isEqualTo(testTraceId);
-        assertThat(saved.getEventType()).isEqualTo("PAYMENT_ATTEMPT");
+        assertThat(saved.getEventType()).isEqualTo(EventType.PAYMENT_ATTEMPT.name());
         assertThat(saved.getEntityType()).isEqualTo("Order");
         assertThat(saved.getEntityId()).isEqualTo(testOrderId);
         assertThat(saved.getStatus()).isEqualTo("IN_PROGRESS");
@@ -91,7 +92,7 @@ class AuditLogServiceTest {
 
         AuditLog saved = captor.getValue();
         assertThat(saved.getTraceId()).isEqualTo(testTraceId);
-        assertThat(saved.getEventType()).isEqualTo("PAYMENT_SUCCESS");
+        assertThat(saved.getEventType()).isEqualTo(EventType.PAYMENT_SUCCESS.name());
         assertThat(saved.getEntityType()).isEqualTo("Order");
         assertThat(saved.getEntityId()).isEqualTo(testOrderId);
         assertThat(saved.getStatus()).isEqualTo("SUCCESS");
@@ -115,7 +116,7 @@ class AuditLogServiceTest {
 
         AuditLog saved = captor.getValue();
         assertThat(saved.getTraceId()).isEqualTo(testTraceId);
-        assertThat(saved.getEventType()).isEqualTo("PAYMENT_FAILED");
+        assertThat(saved.getEventType()).isEqualTo(EventType.PAYMENT_FAILED.name());
         assertThat(saved.getEntityType()).isEqualTo("Order");
         assertThat(saved.getEntityId()).isEqualTo(testOrderId);
         assertThat(saved.getStatus()).isEqualTo("FAILURE");
@@ -124,16 +125,16 @@ class AuditLogServiceTest {
     }
 
     @Test
-    @DisplayName("Should log generic event with all parameters")
+    @DisplayName("Should log generic event with EventType enum")
     void shouldLogGenericEvent() {
         // Given
-        String eventType = "ORDER_CREATED";
+        EventType eventType = EventType.ORDER_CREATED;
         String entityType = "Order";
         String status = "SUCCESS";
-        String errorMessage = null;
+        String eventData = "{\"test\":\"data\"}";
 
         // When
-        auditLogService.logEvent(eventType, entityType, testOrderId, status, errorMessage);
+        auditLogService.logEvent(eventType, entityType, testOrderId, status, eventData);
 
         // Then
         ArgumentCaptor<AuditLog> captor = ArgumentCaptor.forClass(AuditLog.class);
@@ -141,11 +142,36 @@ class AuditLogServiceTest {
 
         AuditLog saved = captor.getValue();
         assertThat(saved.getTraceId()).isEqualTo(testTraceId);
-        assertThat(saved.getEventType()).isEqualTo(eventType);
+        assertThat(saved.getEventType()).isEqualTo(EventType.ORDER_CREATED.name());
         assertThat(saved.getEntityType()).isEqualTo(entityType);
         assertThat(saved.getEntityId()).isEqualTo(testOrderId);
         assertThat(saved.getStatus()).isEqualTo(status);
-        assertThat(saved.getErrorMessage()).isNull();
+        assertThat(saved.getEventData()).isEqualTo(eventData);
+    }
+
+    @Test
+    @DisplayName("Should log event with error using EventType enum")
+    void shouldLogEventWithError() {
+        // Given
+        EventType eventType = EventType.ERROR_OCCURRED;
+        String entityType = "System";
+        String status = "FAILURE";
+        String errorMessage = "Unexpected error occurred";
+
+        // When
+        auditLogService.logEventWithError(eventType, entityType, null, status, errorMessage);
+
+        // Then
+        ArgumentCaptor<AuditLog> captor = ArgumentCaptor.forClass(AuditLog.class);
+        verify(auditLogRepository, times(1)).save(captor.capture());
+
+        AuditLog saved = captor.getValue();
+        assertThat(saved.getTraceId()).isEqualTo(testTraceId);
+        assertThat(saved.getEventType()).isEqualTo(EventType.ERROR_OCCURRED.name());
+        assertThat(saved.getEntityType()).isEqualTo(entityType);
+        assertThat(saved.getEntityId()).isNull();
+        assertThat(saved.getStatus()).isEqualTo(status);
+        assertThat(saved.getErrorMessage()).isEqualTo(errorMessage);
     }
 
     @Test

@@ -48,6 +48,9 @@ class CardControllerTest {
     @MockBean
     private TokenizeCardUseCase tokenizeCardUseCase;
 
+    @MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     private CreditCard tokenizedCard;
     private static final UUID TEST_CUSTOMER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 

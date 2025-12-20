@@ -1,5 +1,6 @@
 package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice;
 
+import com.farmatodo.reto_tecnico.application.service.AuditLogService;
 import com.farmatodo.reto_tecnico.domain.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -45,9 +46,12 @@ class GlobalExceptionHandlerTest {
     @Mock
     private HttpServletRequest request;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     @BeforeEach
     void setUp() {
-        handler = new GlobalExceptionHandler();
+        handler = new GlobalExceptionHandler(auditLogService);
         lenient().when(request.getRequestURI()).thenReturn("/api/v1/test");
     }
 

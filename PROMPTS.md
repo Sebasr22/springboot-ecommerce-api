@@ -3147,3 +3147,225 @@ Sé conciso y directo.
 **Recomendación crítica:** Considerar agregar campo `deliveryAddress` a Order para preservar dirección histórica.
 
 ---
+
+## Prompt #32: Diagrama de Arquitectura en Mermaid.js
+**Fecha**: 2025-12-19
+**Fase**: Documentación
+
+### Contexto
+El usuario solicita la creación de un diagrama de arquitectura del sistema usando Mermaid.js, guardado en un archivo Markdown para visualización externa (mermaid.live).
+
+### Prompt Completo
+```
+Actúa como un Arquitecto de Software Senior.
+
+Necesito que generes el diagrama de arquitectura del sistema "Farmatodo Backend" usando **Mermaid.js**.
+
+Debido a problemas de visualización en la consola, **NO imprimas el resultado aquí**. En su lugar, **CREA un archivo llamado `DIAGRAMA_ARQUITECTURA.md`** y guarda el código allí.
+
+INSTRUCCIONES PARA EL DIAGRAMA (graph TD):
+
+1. **Nivel Alto (Infraestructura):**
+   - Nodo Cliente (Postman/Browser).
+   - Contenedor GCP (Google Cloud Platform).
+   - Dentro de GCP: Docker Host.
+
+2. **Nivel Contenedores (Docker):**
+   - **App Service:** Spring Boot Application (Puerto 8080).
+   - **Database:** PostgreSQL (Puerto 5432).
+   - **Mail Server:** MailHog (Puertos 1025/8025).
+
+3. **Nivel Componentes (Interno App - Hexagonal):**
+   - **Adapters IN:** Security (API Key Filter, TraceIdFilter), Controllers (Rest).
+   - **Domain Core:** Services (Order, Payment, Product), Entities.
+   - **Infrastructure (Async/Cross-Cutting):**
+     - `MdcTaskDecorator` (Propagación de Trace ID).
+     - `AuditLogService` (Auditoría asíncrona).
+   - **Adapters OUT:**
+     - JPA Repositories (con nota de `AttributeEncryptor` para datos sensibles).
+     - Email Client (SMTP).
+
+4. **Conexiones y Protocolos:**
+   - Client -> App: `HTTPS / JSON`.
+   - App -> DB: `JDBC (Port 5432)`.
+   - App -> MailHog: `SMTP (Port 1025)`.
+   - Domain -> AuditLogService: `@Async Call`.
+
+SALIDA REQUERIDA:
+Genera y guarda el archivo `DIAGRAMA_ARQUITECTURA.md` con el código Mermaid listo para copiar y pegar en mermaid.live.
+```
+
+### Resultado Generado
+**Archivo creado:** `DIAGRAMA_ARQUITECTURA.md`
+
+**Contenido:**
+- Diagrama de infraestructura con Cliente, GCP y Docker Host
+- Nivel de contenedores: Spring Boot (8080), PostgreSQL (5432), MailHog (1025/8025)
+- Arquitectura hexagonal interna con:
+  - Adapters IN: Security Filters + REST Controllers
+  - Domain Core: Services, Entities, Value Objects
+  - Cross-Cutting: MdcTaskDecorator, AuditLogService
+  - Adapters OUT: JPA Repositories (con AttributeEncryptor), Email Client
+- Conexiones con protocolos indicados (HTTPS, JDBC, SMTP, @Async)
+
+---
+
+## Prompt #11: Debug de Incidente Crítico - Error 404 en Todas las Rutas
+**Fecha**: 2025-12-19
+**Fase**: Debugging / Troubleshooting
+
+### Contexto
+Incidente crítico en producción/desarrollo local. La aplicación Docker levanta correctamente (Healthcheck OK), los logs muestran que el tráfico llega a Spring Boot, pero TODAS las peticiones devuelven 404 Not Found.
+
+### Prompt Completo
+```
+Actúa como un Senior Backend Developer depurando un incidente crítico.
+
+SÍNTOMAS:
+1. La aplicación Docker levanta correctamente (Healthcheck OK, Logs OK).
+2. Los logs muestran `TraceIdFilter - Request started` y `Request completed`, por lo que el tráfico llega a Spring Boot.
+3. Sin embargo, CUALQUIER petición (incluso con la API Key correcta enviada via curl/PowerShell) a `/actuator/health`, `/v3/api-docs` o `/api/v1/ping` devuelve **404 Not Found**.
+4. En el entorno desplegado anterior, `/ping` funcionaba sin auth, pero ahora localmente todo da 404.
+
+HIPÓTESIS A INVESTIGAR:
+1. **Filtro de Seguridad (`ApiKeyAuthenticationFilter`):** ¿Está configurado para devolver 404 en lugar de 403 cuando falla la auth? ¿O está bloqueando rutas públicas?
+2. **Prefijo de API (`server.servlet.context-path`):** ¿Se configuró algún prefijo global en `application.properties` que olvidamos? (Ej: `/api` o `/farmatodo`).
+3. **Controladores:** ¿Están los controladores escaneándose correctamente?
+
+TAREA:
+Analiza el código fuente (`SecurityConfig.java`, `ApiKeyAuthenticationFilter.java`, `application.properties`, `OrderController.java`) para encontrar la causa raíz.
+
+SALIDA REQUERIDA:
+**NO imprimas la solución en el chat.**
+Genera un archivo llamado `DEBUG_REPORT.md` que contenga:
+1. La Causa Raíz identificada (¿Por qué da 404?).
+2. La URL EXACTA que debo llamar para ver el Swagger o el Health check.
+3. El comando `curl` corregido que sí funcione.
+```
+
+### Resultado Generado
+**Archivo creado:** `DEBUG_REPORT.md`
+
+**Análisis realizado:**
+1. Revisión de application.properties - No hay context-path configurado
+2. Revisión de ApiKeyAuthenticationFilter - Devuelve 401, no 404; whitelist correcta
+3. Revisión de FilterConfig - Doble registro del filtro identificado
+4. Revisión de controladores - Rutas correctamente configuradas
+5. Análisis del Dockerfile y docker-compose.yml
+
+**Causa raíz identificada:** Problema de doble registro del ApiKeyAuthenticationFilter como @Component y via FilterRegistrationBean, combinado con posibles problemas de mapeo de puertos o imagen Docker desactualizada.
+
+---
+
+## Prompt #33: Auditoría Forense de Rutas - Error 404 Persistente
+**Fecha**: 2025-12-20
+**Fase**: Debugging / Troubleshooting
+
+### Contexto
+El error 404 persiste después de que el usuario comentó `@Component` del `ApiKeyAuthenticationFilter` siguiendo la recomendación del debug anterior. Se requiere una investigación forense más profunda.
+
+### Prompt Completo
+```
+Actúa como Investigador Forense de Spring Boot.
+El usuario reporta que el error 404 persiste tras quitar @Component.
+
+NECESITO QUE EJECUTES ESTOS 3 PASOS DE AUDITORÍA:
+
+1. **AUDITORÍA DE RUTAS:**
+   Busca en los logs recientes (`docker logs farmatodo-app`) cualquier línea que contenga la palabra "Mapped".
+   Quiero saber SI Spring detectó los controladores.
+
+2. **AUDITORÍA DE CONFIGURACIÓN:**
+   Lee el contenido del archivo `src/main/resources/application.properties`.
+   Busca si existe la propiedad `server.servlet.context-path` o `server.context-path`.
+
+3. **AUDITORÍA DE PAQUETES:**
+   Verifica la primera línea (package) de:
+   - RetoTecnicoApplication.java
+   - PingController.java
+   Confirma que los controladores están EN o DEBAJO del paquete de la clase main.
+
+SALIDA REQUERIDA:
+Genera un archivo `AUDITORIA_RUTAS.md` con:
+- Las rutas exactas encontradas en los logs.
+- El valor de context-path (si existe).
+- Tu veredicto: ¿Estamos usando la URL incorrecta o los controladores no existen?
+```
+
+### Resultado Generado
+**Archivo creado:** `AUDITORIA_RUTAS.md`
+
+**CAUSA RAÍZ REAL DESCUBIERTA:**
+La aplicación está en un **crash loop infinito**. Los logs de Docker muestran:
+
+```
+APPLICATION FAILED TO START
+
+Parameter 0 of constructor in FilterConfig required a bean of type
+'ApiKeyAuthenticationFilter' that could not be found.
+```
+
+**El problema:**
+1. Se comentó `@Component` en `ApiKeyAuthenticationFilter` (correcto para evitar doble registro)
+2. PERO `FilterConfig` todavía intenta inyectar el filtro via constructor (`@RequiredArgsConstructor`)
+3. Sin el bean, Spring no puede crear `FilterConfig`
+4. La aplicación falla al iniciar
+5. Docker la reinicia en un loop infinito
+
+**Solución:** Descomentar `@Component` O modificar `FilterConfig` para crear la instancia manualmente.
+
+---
+
+## Prompt #34: Resolución Autónoma del Crash Loop
+**Fecha**: 2025-12-20
+**Fase**: Debugging / Hotfix
+
+### Contexto
+Se requirió actuar como Lead DevOps para resolver autónomamente el crash loop identificado en el prompt anterior.
+
+### Prompt Completo
+```
+Actúa como un Lead DevOps y Backend Engineer autónomo.
+
+OBJETIVO CRÍTICO:
+La aplicación Docker local está en un "Crash Loop" infinito.
+Necesito que tomes el control total para diagnosticar, corregir el código y levantar el entorno exitosamente.
+
+TU MISIÓN (Ejecuta paso a paso sin pedir permiso):
+1. Analiza el código: Revisa FilterConfig.java y ApiKeyAuthenticationFilter.java
+2. Corrige el código: Modifica las clases Java necesarias
+3. Reconstrucción Limpia: Docker build --no-cache
+4. Validación: Verificar /ping y /v3/api-docs respondan correctamente
+```
+
+### Resultado Generado
+
+**Archivos modificados:**
+1. `ApiKeyAuthenticationFilter.java`:
+   - Eliminado `@Component` y `@RequiredArgsConstructor`
+   - Añadido constructor explícito que recibe `ObjectMapper` y `configuredApiKey`
+   - Eliminado `@Value` (la API key ahora se pasa por constructor)
+
+2. `FilterConfig.java`:
+   - Ahora inyecta `ObjectMapper` y lee `apiKey` via `@Value`
+   - Crea instancia de `ApiKeyAuthenticationFilter` manualmente con `new`
+
+3. `ApiKeyAuthenticationFilterTest.java`:
+   - Actualizado para usar el nuevo constructor de dos parámetros
+
+4. `.env`:
+   - Cambiado `APP_PORT=8080` a `APP_PORT=8081` para evitar conflicto con WSL Relay
+
+**Problema adicional descubierto:**
+- `wslrelay.exe` (WSL2) estaba escuchando en 127.0.0.1:8080, interceptando las peticiones locales
+- Solución: Cambiar puerto de aplicación a 8081
+
+**Validación exitosa:**
+- `/ping` → 200 OK ✓
+- `/v3/api-docs` → 200 OK ✓
+- `/actuator/health` → 200 OK (todos componentes UP) ✓
+- `/api/v1/products` sin API key → 401 Unauthorized ✓
+- `/api/v1/products` con API key → 200 OK ✓
+
+---
+

@@ -64,6 +64,9 @@ class CartControllerTest {
     @MockBean
     private CheckoutCartUseCase checkoutCartUseCase;
 
+    @MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     private UUID customerId;
     private UUID productId;
     private Product testProduct;

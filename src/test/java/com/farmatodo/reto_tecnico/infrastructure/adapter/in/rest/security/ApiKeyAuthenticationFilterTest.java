@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 
@@ -42,8 +41,7 @@ class ApiKeyAuthenticationFilterTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        filter = new ApiKeyAuthenticationFilter(objectMapper);
-        ReflectionTestUtils.setField(filter, "configuredApiKey", VALID_API_KEY);
+        filter = new ApiKeyAuthenticationFilter(objectMapper, VALID_API_KEY);
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();

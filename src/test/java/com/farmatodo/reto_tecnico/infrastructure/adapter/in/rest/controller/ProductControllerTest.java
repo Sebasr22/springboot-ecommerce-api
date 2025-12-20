@@ -47,6 +47,9 @@ class ProductControllerTest {
     @MockBean
     private SearchProductUseCase searchProductUseCase;
 
+    @MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     private List<Product> testProducts;
 
     @BeforeEach

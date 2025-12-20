@@ -36,6 +36,9 @@ class PaymentTransactionServiceTest {
     @Mock
     private OrderRepositoryPort orderRepository;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     @InjectMocks
     private PaymentTransactionService paymentTransactionService;
 

@@ -1,7 +1,9 @@
 package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.security.filter.TraceIdFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,14 +17,17 @@ import org.springframework.context.annotation.Configuration;
  * IMPORTANT: TraceIdFilter must execute FIRST to ensure all logs
  * (including security logs) contain the trace ID.
  *
- * NOTE: TraceIdFilter is NOT injected because it's not a @Component.
- * It's instantiated directly in the bean method to avoid circular dependency issues.
+ * NOTE: Both filters are instantiated directly (not @Component) to avoid
+ * double registration issues with Spring Boot's auto-configuration.
  */
 @Configuration
 @RequiredArgsConstructor
 public class FilterConfig {
 
-    private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
+    private final ObjectMapper objectMapper;
+
+    @Value("${farmatodo.api.key:default-dev-key-change-in-production}")
+    private String apiKey;
 
     /**
      * Registers TraceIdFilter with highest priority.
@@ -35,22 +40,27 @@ public class FilterConfig {
     @Bean
     public FilterRegistrationBean<TraceIdFilter> traceIdFilter() {
         FilterRegistrationBean<TraceIdFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new TraceIdFilter()); // Create instance directly
-        registrationBean.addUrlPatterns("/*"); // Apply to ALL requests
-        registrationBean.setOrder(0); // HIGHEST priority - executes FIRST
+        registrationBean.setFilter(new TraceIdFilter());
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setOrder(0);
         return registrationBean;
     }
 
     /**
      * Registers API Key authentication filter.
      * Executes AFTER TraceIdFilter so security logs include trace ID.
+     *
+     * NOTE: Creates new instance directly, passing ObjectMapper and API key
+     * to avoid double registration issues.
      */
     @Bean
     public FilterRegistrationBean<ApiKeyAuthenticationFilter> apiKeyFilter() {
+        ApiKeyAuthenticationFilter filter = new ApiKeyAuthenticationFilter(objectMapper, apiKey);
+
         FilterRegistrationBean<ApiKeyAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(apiKeyAuthenticationFilter);
-        registrationBean.addUrlPatterns("/api/*"); // Apply to all /api/** endpoints
-        registrationBean.setOrder(1); // Executes after TraceIdFilter
+        registrationBean.setFilter(filter);
+        registrationBean.addUrlPatterns("/api/*");
+        registrationBean.setOrder(1);
         return registrationBean;
     }
 }

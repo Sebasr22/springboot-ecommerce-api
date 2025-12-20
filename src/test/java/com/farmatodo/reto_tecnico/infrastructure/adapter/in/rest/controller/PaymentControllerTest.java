@@ -61,6 +61,9 @@ class PaymentControllerTest {
     @MockBean
     private OrderRepositoryPort orderRepository;
 
+    @MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     private Order testOrder;
     private UUID orderId;
 

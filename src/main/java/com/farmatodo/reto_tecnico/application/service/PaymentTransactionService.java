@@ -1,5 +1,6 @@
 package com.farmatodo.reto_tecnico.application.service;
 
+import com.farmatodo.reto_tecnico.domain.model.EventType;
 import com.farmatodo.reto_tecnico.domain.model.Order;
 import com.farmatodo.reto_tecnico.domain.port.out.OrderRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaymentTransactionService {
 
     private final OrderRepositoryPort orderRepository;
+    private final AuditLogService auditLogService;
 
     /**
      * Saves order state within a new transaction.
@@ -57,8 +59,27 @@ public class PaymentTransactionService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Order confirmPaymentAndSave(Order order) {
+        String oldStatus = order.getStatus().name();
         order.confirmPayment();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        String newStatus = savedOrder.getStatus().name();
+
+        // RF8: Log order status change to audit trail
+        String eventData = String.format(
+                "{\"orderId\":\"%s\",\"oldStatus\":\"%s\",\"newStatus\":\"%s\"}",
+                savedOrder.getId(),
+                oldStatus,
+                newStatus
+        );
+        auditLogService.logEvent(
+                EventType.ORDER_STATUS_CHANGED,
+                "Order",
+                savedOrder.getId(),
+                "SUCCESS",
+                eventData
+        );
+
+        return savedOrder;
     }
 
     /**
@@ -70,7 +91,26 @@ public class PaymentTransactionService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Order failPaymentAndSave(Order order) {
+        String oldStatus = order.getStatus().name();
         order.failPayment();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        String newStatus = savedOrder.getStatus().name();
+
+        // RF8: Log order status change to audit trail
+        String eventData = String.format(
+                "{\"orderId\":\"%s\",\"oldStatus\":\"%s\",\"newStatus\":\"%s\"}",
+                savedOrder.getId(),
+                oldStatus,
+                newStatus
+        );
+        auditLogService.logEvent(
+                EventType.ORDER_STATUS_CHANGED,
+                "Order",
+                savedOrder.getId(),
+                "SUCCESS",
+                eventData
+        );
+
+        return savedOrder;
     }
 }

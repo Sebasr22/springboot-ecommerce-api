@@ -1,9 +1,12 @@
 package com.farmatodo.reto_tecnico.infrastructure.adapter.in.rest.advice;
 
+import com.farmatodo.reto_tecnico.application.service.AuditLogService;
 import com.farmatodo.reto_tecnico.domain.exception.*;
+import com.farmatodo.reto_tecnico.domain.model.EventType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -36,8 +39,11 @@ import java.util.stream.Collectors;
  * - 500 Internal Server Error: Unexpected errors (generic message for security)
  */
 @RestControllerAdvice
+@RequiredArgsConstructor
 @Slf4j
 public class GlobalExceptionHandler {
+
+    private final AuditLogService auditLogService;
 
     // ===========================================
     // 400 BAD REQUEST - Input Validation Errors
@@ -530,6 +536,21 @@ public class GlobalExceptionHandler {
     ) {
         // Log full stack trace for debugging
         log.error("Unexpected error on {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+        // RF8: Log error to audit trail (async, non-blocking)
+        String errorMessage = String.format(
+                "Unexpected error on %s: %s - %s",
+                request.getRequestURI(),
+                ex.getClass().getSimpleName(),
+                ex.getMessage()
+        );
+        auditLogService.logEventWithError(
+                EventType.ERROR_OCCURRED,
+                "System",
+                null,
+                "FAILURE",
+                errorMessage
+        );
 
         // Return generic message (never expose internal details to client)
         ErrorResponse response = ErrorResponse.builder()

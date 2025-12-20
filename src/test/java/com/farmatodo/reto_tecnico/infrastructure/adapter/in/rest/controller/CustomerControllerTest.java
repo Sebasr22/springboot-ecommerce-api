@@ -48,6 +48,9 @@ class CustomerControllerTest {
     @MockBean
     private RegisterCustomerUseCase registerCustomerUseCase;
 
+    @MockBean
+    private com.farmatodo.reto_tecnico.application.service.AuditLogService auditLogService;
+
     @Test
     @DisplayName("Should register customer successfully with 201 status")
     void shouldRegisterCustomer() throws Exception {
