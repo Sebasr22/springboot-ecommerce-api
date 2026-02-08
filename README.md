@@ -1,6 +1,6 @@
-# Farmatodo - Sistema Backend E-commerce
+# Sistema Backend E-commerce
 
-Aplicación Backend para un sistema de E-commerce, desarrollado como reto técnico para Farmatodo.
+Aplicación Backend completa para sistema de E-commerce con procesamiento de pagos, tokenización de tarjetas de crédito y gestión de órdenes.
 
 ## 1. Descripción del Sistema y Componentes
 
@@ -58,7 +58,7 @@ com.farmatodo.reto_tecnico/
 ### Paso 1: Clonar el Repositorio
 ```bash
 git clone https://github.com/Sebasr22/farmatodo-backend-challenge
-cd ft-backend
+cd farmatodo-backend-challenge
 ```
 
 ### Paso 2: Configurar Variables de Entorno
@@ -133,12 +133,13 @@ docker compose up -d --build app
 
 La aplicación está desplegada en una Máquina Virtual (Compute Engine) de Google Cloud Platform, orquestada mediante Docker y utilizando Nginx como servidor web y proxy inverso. La gestión de DNS y el apuntamiento del subdominio se realizan a través de Cloudflare. El proyecto dispone de un pipeline de Integración Continua / Despliegue Continuo (CI/CD) completamente automatizado.
 
-### Enlaces del Entorno Productivo
+### Ejemplo de Entorno Productivo
 
-- **API Base URL:** `https://ft-api.srodriguez-tech.com`
+> **Nota:** Estas son URLs de ejemplo de un despliegue previo. Reemplazar con tu propio dominio al desplegar.
+
+- **URL Base API:** `https://ft-api.srodriguez-tech.com`
 - **Documentación API (Swagger):** https://ft-api.srodriguez-tech.com/swagger-ui/index.html
 - **Health Check:** `https://ft-api.srodriguez-tech.com/ping`
-- **MailHog:** http://35.223.193.13:8025/
 - **Pipeline CI/CD (GitHub Actions):** https://github.com/Sebasr22/farmatodo-backend-challenge/actions
 
 ### Arquitectura de Despliegue
@@ -208,15 +209,15 @@ Todos los recursos necesarios para probar la API se encuentran organizados en la
 
 ### Configuración Inicial
 
-1. **Importar Environment:** Cargar el archivo `resources/postman/environments/Farmatodo_Env.postman_environment.json`.
+1. **Importar Environment:** Cargar el archivo `resources/postman/environments/dev.postman_environment.json`.
 
-2. **Seleccionar Environment:** Asegurarse de tener seleccionado "Farmatodo" (o "dev") en Postman antes de ejecutar cualquier petición.
+2. **Seleccionar Environment:** Asegurarse de tener seleccionado "dev" en Postman antes de ejecutar cualquier petición.
 
 ### Colecciones Disponibles
 
 Hemos incluido 2 colecciones especializadas en la carpeta `resources/postman/collections`:
 
-#### A. Farmatodo - Data-Driven Tests
+#### A. E-commerce - Data-Driven Tests
 
 - **Enfoque:** Pruebas de validación masiva con datos externos.
 
@@ -232,31 +233,13 @@ Hemos incluido 2 colecciones especializadas en la carpeta `resources/postman/col
   - `customer_tests.csv`: Validaciones de registro de clientes.
   - `cards_tokenization_tests.csv`: Validaciones de tokenización de tarjetas.
 
-#### B. Farmatodo - E2E Automatic Flows
+#### B. E-commerce - E2E Flows
 
 - **Enfoque:** Flujos "End-to-End" completos y autónomos.
 
 - **Descripción:** Esta colección NO requiere archivos CSV. Utiliza scripts internos (Pre-request Scripts) para generar datos aleatorios (Emails únicos, Teléfonos, Tarjetas) en cada ejecución.
 
-- **Uso ideal:** Validar rápidamente que todo el sistema funciona (Happy Path) sin configurar datos manualmente. Solo dale al botón "Run".
-
----
-
-## 6. Uso de Inteligencia Artificial
-
-Durante el desarrollo de este proyecto se utilizó **Claude Code** (Anthropic) de manera extensiva para:
-
-- Generación de código base de la aplicación
-- Implementación de arquitectura hexagonal
-- Desarrollo de tests unitarios e integración
-- Resolución de problemas técnicos y debugging
-- Documentación del proyecto
-
-### Documentación de Prompts
-
-Todos los prompts utilizados están documentados en: **[PROMPTS.md](PROMPTS.md)**
-
-El uso de IA como herramienta de desarrollo es parte de las prácticas modernas de ingeniería de software, permitiendo enfocarse en arquitectura, integración y resolución de problemas complejos.
+- **Uso ideal:** Validar rápidamente que todo el sistema funciona (Happy Path) sin configurar datos manualmente. Solo presionar el botón "Run".
 
 ---
 

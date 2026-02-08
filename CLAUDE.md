@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**ft-backend** is a Java 21 + Spring Boot 3.4.0 backend system that implements a credit card tokenization, customer management, and e-commerce order processing system following Clean Architecture/Hexagonal Architecture principles.
+**E-commerce Backend** es un sistema backend Java 21 + Spring Boot 3.4.0 que implementa tokenización de tarjetas de crédito, gestión de clientes y procesamiento de órdenes e-commerce siguiendo los principios de Clean Architecture/Hexagonal Architecture.
 
 **Key Technical Stack:**
 - Java 21
@@ -222,56 +222,14 @@ Global exception handling via `@RestControllerAdvice` in `GlobalExceptionHandler
 ## Code Style & Patterns
 
 - **Code Language:** English
-- **Documentation Language:** Spanish (for PROMPTS.md, comments)
 - **Lombok Usage:** Extensive (@Builder, @Data, @Value, @RequiredArgsConstructor)
 - **Logging:** SLF4J with `@Slf4j`
 - **Validation:** Jakarta Validation annotations in domain and DTOs
 - **Transactions:** `@Transactional` on service methods that modify state
 
-## AI Documentation Protocol (MANDATORY)
-
-**⚠️ CRITICAL REQUIREMENT - MUST BE FOLLOWED ON EVERY INTERACTION:**
-
-Before performing any task, your **FIRST ACTION** must be to document the user's prompt in `PROMPTS.md`. This is a project requirement for documenting AI assistance.
-
-### Documentation Steps:
-1. **Read** the user's prompt/request
-2. **Append** to `PROMPTS.md` (never delete existing content) following this format:
-   ```markdown
-   ## Prompt #N: [Descriptive Title]
-   **Fecha**: YYYY-MM-DD
-   **Fase**: [Planificación/Desarrollo/Testing/Deployment/Dockerización]
-
-   ### Contexto
-   [Brief context and project state]
-
-   ### Prompt Completo
-   ```
-   [Full user prompt here]
-   ```
-
-   ### Resultado Generado
-   [What was generated, decisions made, files created/modified]
-   ```
-3. **Then** proceed with the actual task
-4. **Update** the "Resultado Generado" section after completing the task
-
-**Why This Matters:**
-- Project requirement: Document all AI usage
-- Provides audit trail for technical decisions
-- Helps future developers understand AI-assisted development choices
-
-### Current Status:
-- 10 prompts documented (as of 2025-12-17)
-- See `PROMPTS.md` for complete history
-
----
-
 ## Special Notes
 
-1. **PROMPTS.md**: Document all AI prompts used during development (project requirement) - See "AI Documentation Protocol" section above
-
-2. **Async Configuration**: Enabled with `@EnableAsync` on main class
+1. **Async Configuration**: Enabled with `@EnableAsync` on main class
    - Thread pool: 5-10 threads
    - Used for search logging (ProductServiceImpl)
 
