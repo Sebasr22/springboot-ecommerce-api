@@ -77,7 +77,7 @@ This project follows **Clean Architecture / Hexagonal Architecture** with strict
 ### Layer Structure
 
 ```
-com.farmatodo.reto_tecnico/
+src/main/java/
 ├── domain/                    # Pure business logic (NO Spring dependencies)
 │   ├── model/                # Domain entities and value objects
 │   │   ├── valueobjects/    # Email, Phone, Money, CardNumber (Records)

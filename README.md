@@ -12,7 +12,8 @@ Este proyecto es una **API Backend** para una plataforma de E-commerce que gesti
 
 La aplicación sigue el patrón de **Arquitectura Hexagonal (Ports and Adapters)** con una separación estricta de capas:
 ```
-com.farmatodo.reto_tecnico/
+src/main/java/
+
 ├── domain/                    # Lógica de negocio pura (SIN dependencias de framework)
 │   ├── model/                # Entidades de dominio y value objects
 │   ├── port/
@@ -57,8 +58,8 @@ com.farmatodo.reto_tecnico/
 
 ### Paso 1: Clonar el Repositorio
 ```bash
-git clone https://github.com/Sebasr22/farmatodo-backend-challenge
-cd farmatodo-backend-challenge
+git clone https://github.com/Sebasr22/springboot-ecommerce-api
+cd springboot-ecommerce-api
 ```
 
 ### Paso 2: Configurar Variables de Entorno
@@ -140,7 +141,7 @@ La aplicación está desplegada en una Máquina Virtual (Compute Engine) de Goog
 - **URL Base API:** `https://ft-api.srodriguez-tech.com`
 - **Documentación API (Swagger):** https://ft-api.srodriguez-tech.com/swagger-ui/index.html
 - **Health Check:** `https://ft-api.srodriguez-tech.com/ping`
-- **Pipeline CI/CD (GitHub Actions):** https://github.com/Sebasr22/farmatodo-backend-challenge/actions
+- **Pipeline CI/CD (GitHub Actions):** https://github.com/Sebasr22/springboot-ecommerce-api/actions
 
 ### Arquitectura de Despliegue
 
