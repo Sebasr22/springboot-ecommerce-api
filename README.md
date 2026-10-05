@@ -1,251 +1,244 @@
-# Sistema Backend E-commerce
+# E-commerce Backend API
 
-Aplicación Backend completa para sistema de E-commerce con procesamiento de pagos, tokenización de tarjetas de crédito y gestión de órdenes.
+**English** | [Español](README.es.md)
 
-## 1. Descripción del Sistema y Componentes
+Backend application for an e-commerce platform with payment processing, credit card tokenization, and order management.
 
-Este proyecto es una **API Backend** para una plataforma de E-commerce que gestiona clientes, catálogo de productos, carrito de compras, tokenización de tarjetas de crédito y procesamiento de órdenes con simulación de pagos.
+## 1. System Overview and Components
 
-### Arquitectura
+This project is a **Backend API** for an e-commerce platform that manages customers, a product catalog, shopping carts, credit card tokenization, and order processing with payment simulation.
 
-![Arquitectura Hexagonal](resources/architecture/architecture_diagram.png)
+### Architecture
 
-La aplicación sigue el patrón de **Arquitectura Hexagonal (Ports and Adapters)** con una separación estricta de capas:
+![Hexagonal Architecture](resources/architecture/architecture_diagram.png)
+
+The application follows the **Hexagonal Architecture (Ports and Adapters)** pattern with strict layer separation:
 ```
 src/main/java/
 
-├── domain/                    # Lógica de negocio pura (SIN dependencias de framework)
-│   ├── model/                # Entidades de dominio y value objects
+├── domain/                    # Pure business logic (NO framework dependencies)
+│   ├── model/                # Domain entities and value objects
 │   ├── port/
-│   │   ├── in/              # Interfaces de casos de uso (input ports)
-│   │   └── out/             # Interfaces de repositorios/gateways (output ports)
-│   └── exception/           # Excepciones de dominio
+│   │   ├── in/              # Use case interfaces (input ports)
+│   │   └── out/             # Repository/gateway interfaces (output ports)
+│   └── exception/           # Domain exceptions
 │
-├── application/              # Orquestación de casos de uso
-│   └── service/             # Implementaciones de servicios
+├── application/              # Use case orchestration
+│   └── service/             # Service implementations
 │
-└── infrastructure/           # Integraciones con frameworks externos
+└── infrastructure/           # Integrations with external frameworks
     ├── adapter/
     │   ├── in/rest/         # Controllers, DTOs, Mappers
     │   └── out/             # JPA Entities, Repositories, Adapters
-    └── config/              # Configuración de infraestructura
+    └── config/              # Infrastructure configuration
 ```
 
-### Stack Tecnológico
+### Tech Stack
 
-| Categoría | Tecnología |
-|-----------|------------|
-| Lenguaje | Java 21 |
+| Category | Technology |
+|----------|------------|
+| Language | Java 21 |
 | Framework | Spring Boot 3.3.5 |
-| Base de Datos | PostgreSQL 16 |
-| Contenedores | Docker & Docker Compose |
+| Database | PostgreSQL 16 |
+| Containers | Docker & Docker Compose |
 | Build Tool | Maven |
-| Generación de Código | Lombok, MapStruct |
-| Documentación API | SpringDoc OpenAPI (Swagger) |
+| Code Generation | Lombok, MapStruct |
+| API Documentation | SpringDoc OpenAPI (Swagger) |
 | Testing | JUnit 5, Mockito, Testcontainers |
-| Cobertura de Código | JaCoCo (requisito mínimo 80%) |
-| Testing de Email | MailHog |
+| Code Coverage | JaCoCo (80% minimum required) |
+| Email Testing | MailHog |
 
 ---
 
-## 2. Instrucciones para Ejecutar Localmente
+## 2. Running Locally
 
-### Prerrequisitos
+### Prerequisites
 
 - **Java 21** (JDK)
-- **Docker** y **Docker Compose**
-- **Maven 3.8+** (o usar el Maven Wrapper incluido `./mvnw`)
+- **Docker** and **Docker Compose**
+- **Maven 3.8+** (or use the included Maven Wrapper `./mvnw`)
 
-### Paso 1: Clonar el Repositorio
+### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/Sebasr22/springboot-ecommerce-api
 cd springboot-ecommerce-api
 ```
 
-### Paso 2: Configurar Variables de Entorno
+### Step 2: Configure Environment Variables
 
-Copiar el archivo de entorno de ejemplo:
+Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-Editar el archivo `.env` con los valores deseados:
+Edit the `.env` file with your values:
 ```properties
-# Configuración de Base de Datos
+# Database Configuration
 DB_PASSWORD=your_secure_password
 DB_USER=postgres
-DB_NAME=farmatodo_db
+DB_NAME=ecommerce_db
 DB_PORT=5432
-DB_HOST=farmatodo-postgres
+DB_HOST=ecommerce-postgres
 
-# Seguridad de la Aplicación
+# Application Security
 ENCRYPTION_KEY=change_this_to_a_secure_random_key_minimum_32_characters
 API_KEY=change_this_to_a_secure_api_key
 
-# Configuración SMTP (MailHog)
+# SMTP Configuration (MailHog)
 SPRING_MAIL_HOST=mailhog
 SPRING_MAIL_PORT=1025
 
-# Puerto de la Aplicación
+# Application Port
 APP_PORT=8080
 ```
 
-### Paso 3: Iniciar la Aplicación
+### Step 3: Start the Application
 
-Ejecutar todos los servicios con Docker Compose:
+Run all services with Docker Compose:
 ```bash
 docker compose up -d --build
 ```
 
-Este comando realizará lo siguiente:
-1. Construir la imagen de la aplicación Spring Boot
-2. Iniciar la base de datos PostgreSQL 16
-3. Iniciar el servidor de email MailHog
-4. Iniciar el contenedor de la aplicación
+This command will:
+1. Build the Spring Boot application image
+2. Start the PostgreSQL 16 database
+3. Start the MailHog email server
+4. Start the application container
 
-### Paso 4: Verificar los Servicios
+### Step 4: Verify the Services
 
-| Servicio | URL/Puerto | Descripción |
-|----------|------------|-------------|
-| **API** | `http://localhost:8080` | Aplicación principal |
-| **Swagger UI** | `http://localhost:8080/swagger-ui.html` | Documentación de la API |
-| **Health Check** | `http://localhost:8080/ping` | Estado de la aplicación |
-| **MailHog UI** | `http://localhost:8025` | Interfaz de testing de emails |
-| **PostgreSQL** | `localhost:5432` | Base de datos |
+| Service | URL/Port | Description |
+|---------|----------|-------------|
+| **API** | `http://localhost:8080` | Main application |
+| **Swagger UI** | `http://localhost:8080/swagger-ui.html` | API documentation |
+| **Health Check** | `http://localhost:8080/ping` | Application status |
+| **MailHog UI** | `http://localhost:8025` | Email testing interface |
+| **PostgreSQL** | `localhost:5432` | Database |
 
-### Comandos Útiles
+### Useful Commands
 ```bash
-# Ver logs
+# View logs
 docker compose logs -f app
 
-# Detener todos los servicios
+# Stop all services
 docker compose down
 
-# Detener y eliminar volúmenes (limpiar base de datos)
+# Stop and remove volumes (reset the database)
 docker compose down -v
 
-# Reconstruir solo la aplicación
+# Rebuild only the application
 docker compose up -d --build app
 ```
 
 ---
 
-## 3. Despliegue en GCP y CI/CD (Live Demo)
+## 3. GCP Deployment and CI/CD
 
-La aplicación está desplegada en una Máquina Virtual (Compute Engine) de Google Cloud Platform, orquestada mediante Docker y utilizando Nginx como servidor web y proxy inverso. La gestión de DNS y el apuntamiento del subdominio se realizan a través de Cloudflare. El proyecto dispone de un pipeline de Integración Continua / Despliegue Continuo (CI/CD) completamente automatizado.
+The application was deployed on a Google Cloud Platform virtual machine (Compute Engine), orchestrated with Docker and using Nginx as web server and reverse proxy. DNS and subdomain routing are managed through Cloudflare. The project includes a fully automated Continuous Integration / Continuous Deployment (CI/CD) pipeline.
 
-### Ejemplo de Entorno Productivo
+> **Note:** The live demo from the previous deployment is currently offline. You can run the full stack locally in a few minutes by following [Section 2](#2-running-locally).
 
-> **Nota:** Estas son URLs de ejemplo de un despliegue previo. Reemplazar con tu propio dominio al desplegar.
+- **CI/CD Pipeline (GitHub Actions):** https://github.com/Sebasr22/springboot-ecommerce-api/actions
 
-- **URL Base API:** `https://ft-api.srodriguez-tech.com`
-- **Documentación API (Swagger):** https://ft-api.srodriguez-tech.com/swagger-ui/index.html
-- **Health Check:** `https://ft-api.srodriguez-tech.com/ping`
-- **Pipeline CI/CD (GitHub Actions):** https://github.com/Sebasr22/springboot-ecommerce-api/actions
+### Deployment Architecture
 
-### Arquitectura de Despliegue
-
-La aplicación está desplegada con la siguiente arquitectura:
-
-- **Infraestructura:** Google Cloud Platform (Compute Engine VM)
-- **Orquestación:** Docker Compose
-- **Servidor Web:** Nginx como reverse proxy
+- **Infrastructure:** Google Cloud Platform (Compute Engine VM)
+- **Orchestration:** Docker Compose
+- **Web Server:** Nginx as reverse proxy
 - **DNS:** Cloudflare
-- **CI/CD:** GitHub Actions con despliegue automático en cada push a `main`
+- **CI/CD:** GitHub Actions with automatic deployment on every push to `main`
 
-**Flujo de despliegue automatizado:**
-1. Los tests se ejecutan en GitHub Actions
-2. Si pasan, el código se copia a la VM vía SSH
-3. Se genera el archivo `.env` con secretos de GitHub
-4. Docker Compose reconstruye y levanta los contenedores
-5. Nginx redirige el tráfico HTTPS al contenedor de la app
+**Automated deployment flow:**
+1. Tests run on GitHub Actions
+2. If they pass, the code is copied to the VM via SSH
+3. The `.env` file is generated from GitHub Secrets
+4. Docker Compose rebuilds and starts the containers
+5. Nginx routes HTTPS traffic to the application container
 
 ---
 
-## 4. Cómo Ejecutar los Tests
+## 4. Running the Tests
 
-El proyecto incluye **Tests Unitarios** y **Tests de Integración** con Testcontainers.
+The project includes **Unit Tests** and **Integration Tests** with Testcontainers.
 
-### Ejecutar Todos los Tests
+### Run All Tests
 ```bash
-# Usando Maven Wrapper (recomendado)
+# Using the Maven Wrapper (recommended)
 ./mvnw clean test
 
-# En Windows
+# On Windows
 mvnw.cmd clean test
 ```
 
-### Ejecutar Tests con Reporte de Cobertura
+### Run Tests with Coverage Report
 ```bash
 ./mvnw clean verify
 ```
 
-El reporte de cobertura se generará en: `target/site/jacoco/index.html`
+The coverage report is generated at: `target/site/jacoco/index.html`
 
-**Nota:** El proyecto exige un mínimo de **80% de cobertura de código** mediante JaCoCo.
+**Note:** The build enforces a minimum of **80% code coverage** through JaCoCo.
 
-### Ejecutar Tests Específicos
+### Run Specific Tests
 ```bash
-# Ejecutar una clase de test específica
+# Run a specific test class
 ./mvnw test -Dtest=CustomerServiceImplTest
 
-# Ejecutar un método de test específico
+# Run a specific test method
 ./mvnw test -Dtest=CustomerServiceImplTest#shouldRegisterCustomerSuccessfully
 ```
 
-### Categorías de Tests
+### Test Categories
 
-| Tipo | Descripción | Ubicación |
-|------|-------------|-----------|
-| Tests Unitarios | Lógica de dominio sin contexto de Spring | `src/test/java/**/domain/**` |
-| Tests de Servicios | Servicios de aplicación con dependencias mockeadas | `src/test/java/**/application/**` |
-| Tests de Integración | Stack completo con Testcontainers | `src/test/java/**/infrastructure/**` |
-| Tests de Controllers | Endpoints REST con MockMvc | `src/test/java/**/rest/**` |
+| Type | Description | Location |
+|------|-------------|----------|
+| Unit Tests | Domain logic without Spring context | `src/test/java/**/domain/**` |
+| Service Tests | Application services with mocked dependencies | `src/test/java/**/application/**` |
+| Integration Tests | Full stack with Testcontainers | `src/test/java/**/infrastructure/**` |
+| Controller Tests | REST endpoints with MockMvc | `src/test/java/**/rest/**` |
 
 ---
 
-## 5. Pruebas y Documentación API (Postman)
+## 5. API Testing and Documentation (Postman)
 
-Todos los recursos necesarios para probar la API se encuentran organizados en la carpeta `resources/postman`.
+All resources needed to test the API are organized in the `resources/postman` folder.
 
-### Configuración Inicial
+### Initial Setup
 
-1. **Importar Environment:** Cargar el archivo `resources/postman/environments/dev.postman_environment.json`.
+1. **Import the Environment:** Load `resources/postman/environments/dev.postman_environment.json`.
 
-2. **Seleccionar Environment:** Asegurarse de tener seleccionado "dev" en Postman antes de ejecutar cualquier petición.
+2. **Select the Environment:** Make sure "dev" is selected in Postman before running any request.
 
-### Colecciones Disponibles
+### Available Collections
 
-Hemos incluido 2 colecciones especializadas en la carpeta `resources/postman/collections`:
+Two specialized collections are included in `resources/postman/collections`:
 
 #### A. E-commerce - Data-Driven Tests
 
-- **Enfoque:** Pruebas de validación masiva con datos externos.
+- **Focus:** Bulk validation tests using external data.
 
-- **Cómo ejecutar:**
-  1. Abrir el Collection Runner en Postman.
-  2. Seleccionar la carpeta/request deseada (Marcadas con (Done)).
-  3. Cargar el archivo CSV correspondiente desde `resources/postman/data/`.
-  4. Ejecutar.
+- **How to run:**
+  1. Open the Collection Runner in Postman.
+  2. Select the desired folder/request (marked with (Done)).
+  3. Load the corresponding CSV file from `resources/postman/data/`.
+  4. Run.
 
-- **Archivos CSV Disponibles:**
-  - `order_tests.csv`: Validaciones de creación de órdenes.
-  - `cart_tests.csv`: Validaciones de límites y errores del carrito.
-  - `customer_tests.csv`: Validaciones de registro de clientes.
-  - `cards_tokenization_tests.csv`: Validaciones de tokenización de tarjetas.
+- **Available CSV files:**
+  - `order_tests.csv`: Order creation validations.
+  - `cart_tests.csv`: Cart limits and error validations.
+  - `customer_tests.csv`: Customer registration validations.
+  - `cards_tokenization_tests.csv`: Card tokenization validations.
 
 #### B. E-commerce - E2E Flows
 
-- **Enfoque:** Flujos "End-to-End" completos y autónomos.
+- **Focus:** Complete, self-contained end-to-end flows.
 
-- **Descripción:** Esta colección NO requiere archivos CSV. Utiliza scripts internos (Pre-request Scripts) para generar datos aleatorios (Emails únicos, Teléfonos, Tarjetas) en cada ejecución.
+- **Description:** This collection does NOT require CSV files. It uses pre-request scripts to generate random data (unique emails, phone numbers, cards) on every run.
 
-- **Uso ideal:** Validar rápidamente que todo el sistema funciona (Happy Path) sin configurar datos manualmente. Solo presionar el botón "Run".
-
----
-
-### Resumen de Endpoints de la API
-
-Para documentación completa de la API, visitar [Swagger UI](https://ft-api.srodriguez-tech.com/swagger-ui/index.html)
+- **Best for:** Quickly validating that the whole system works (happy path) without setting up data manually. Just press "Run".
 
 ---
+
+### API Endpoints
+
+For the full API documentation, run the project locally and open [Swagger UI](http://localhost:8080/swagger-ui.html).
